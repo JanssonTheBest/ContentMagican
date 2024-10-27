@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ContentMagican</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ContentMagican.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="d-flex flex-column flex-shrink-0 p-0 bg-light" style="width: 20vw; height:100vh; position:fixed; z-index:1000; min-width:100px">
+        <div class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none" style="background-image:url(/Resources/ContentMagican.png); background-position:center; min-width:92px; background-size:cover; width:18vw; max-width:200px; height:auto; padding-bottom:90px; margin-left:5px; align-items:center">
+        </div>
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li>
+                <a asp-controller="Plan" asp-action="Main" class="nav-link page-link" style="border-radius:0px; text-decoration:none; color:dimgray">
+                    Plan
+                </a>
+            </li>
+            <li>
+                <a asp-controller="Dashboard" asp-action="Main" class="nav-link page-link" style="border-radius:0px; text-decoration:none; color:dimgray">
+                    Dashboard
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Tasks" asp-action="Main" class="nav-link page-link" style="border-radius:0px; text-decoration:none; color:dimgray">
+                    Tasks
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Settings" asp-action="Main" class="nav-link page-link" style="border-radius:0px; text-decoration:none; color:dimgray">
+                    Settings
+                </a>
+            </li>
+        </ul>
+        
+    </div>
+
+
+    <div class="container" style="width:80vw; float:right" " >
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
