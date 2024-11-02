@@ -1,0 +1,73 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+
+
+
+
+
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Choose a content type</h1>
+
+    <div class="row">
+        <form action="@Url.Action("ChangeTaskSettings","Tasks")" method="post" style="min-height:10vh">
+
+            <div class="overflow-scroll">
+
+                @for (int i = 0; i < 9; i++)
+                {
+                    <!-- First Box -->
+                    <div class="card" style="align-items:center; padding:10px; margin:3px;">
+                        <div class="col-12 col-sm-6 col-md-4 mb-0" style="display:flex; flex-direction:row; width:100%; margin: 0 auto">
+
+                            <!-- Updated to include unique id and class -->
+                            <input type="radio" class="radioButton" id="q@i" name="r" value="@i" style="width:10%">
+                            <!-- Associated label for better accessibility -->
+                            <label for="q@i" style="width:90%; margin:0 auto">
+                                Reddit Stories @i
+                            </label>
+                        </div>
+                    </div>
+                }
+                </div>
+
+
+
+                <!-- Changed to a button with disabled attribute -->
+                <div class="d-flex justify-content-end mb-3" style="display:flex; justify-content:right;">
+                    <button type="submit" class="btn btn-primary" id="nextButton" disabled style="margin:5px; height:40px">
+                        Next
+                    </button>
+                </div>
+        </form>
+    </div>
+</div>
+
+<!-- JavaScript to handle enabling/disabling the Next button -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const radioButtons = document.querySelectorAll('.radioButton');
+        const nextButton = document.getElementById('nextButton');
+
+        function checkRadioButtons() {
+            let checked = false;
+            radioButtons.forEach(function (radio) {
+                if (radio.checked) {
+                    checked = true;
+                }
+            });
+            nextButton.disabled = !checked;
+        }
+
+        // Initially disable the Next button
+        nextButton.disabled = true;
+
+        // Add event listeners to all radio buttons
+        radioButtons.forEach(function (radio) {
+            radio.addEventListener('change', checkRadioButtons);
+        });
+    });
+</script>

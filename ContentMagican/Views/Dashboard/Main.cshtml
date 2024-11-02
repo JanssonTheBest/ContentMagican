@@ -1,105 +1,60 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@model DashboardViewModel;
-@{
-    
-}
-
-
-<div class="card" style="width:300px; min-height:400px; display:inline-block; margin:5px; align-items:center">
-
-    <div style="width:100%; height:100%; display:flex; justify-content:center; flex-direction: column; align-items:center">
-        <strong style="text-align:center">Platforms</strong>
-        <p style="text-align:center">Connected Platforms:</p>
-
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">TikTok</button>
-
-
-        <br />
-
-      
-
-        <p style="text-align:center">Platforms to connect:</p>
-
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">Youtube</button>
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">Instagram</button>
-
+﻿<div class="container mt-4">
+    <div class="text-center mb-4">
+        <strong class="h2">Dashboard</strong>
     </div>
-</div>
 
-<div class="card" style="width:300px; min-height:400px; display:inline-block; margin:5px; align-items:center">
+    <div class="row">
+        <!-- Platforms Card -->
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 text-center p-3">
+                <strong class="mb-2">Platforms</strong>
+                <p>Connected Platforms:</p>
+                <div style="width:100%; display:flex; justify-content:center;">
+                    <button class="btn btn-outline-primary w-75 mb-3">TikTok</button>
+                </div>
+                <p>Platforms to connect:</p>
+                <div style="width:100%; display:flex; flex-direction: column; align-items:center;">
+                    <button class="btn btn-outline-secondary w-75 mb-2">YouTube</button>
+                    <button class="btn btn-outline-secondary w-75">Instagram</button>
+                </div>
+            </div>
+        </div>
 
-    <div style="width:100%; height:100%; display:flex; justify-content:center; flex-direction: column; align-items:center">
-        <strong style="text-align:center">Views</strong>
-        <p style="text-align:center">Connected Platforms:</p>
+        <!-- Views Card -->
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <!-- Rest of your cards remain the same -->
+            <div class="card h-100 text-center p-3">
+                <strong class="mb-2">Views</strong>
+                <p>Views:</p>
+                <hr />
+                <p>Chart:</p>
+            </div>
+        </div>
 
-        <br />
+        <!-- Calculated Revenue Card -->
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 text-center p-3">
+                <strong class="mb-2">Calculated Revenue</strong>
+                <p>Revenue:</p>
+                <hr />
+                <p>Chart:</p>
+            </div>
+        </div>
 
-        <hr>
+        <!-- Logs Card -->
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 text-center p-3">
+                <strong class="mb-2">Logs</strong>
+                <p>Logs:</p>
+            </div>
+        </div>
 
-        <p style="text-align:center">Platforms to connect:</p>
-
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">TikTok</button>
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">Youtube</button>
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">Instagram</button>
-
-    </div>
-</div>
-
-<div class="card" style="width:300px; min-height:400px; display:inline-block; margin:5px; align-items:center">
-
-    <div style="width:100%; height:100%; display:flex; justify-content:center; flex-direction: column; align-items:center">
-        <strong style="text-align:center">Calculated Revenue</strong>
-        <p style="text-align:center">Connected Platforms:</p>
-
-        <br />
-
-        <hr>
-
-        <p style="text-align:center">Platforms to connect:</p>
-
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">TikTok</button>
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">Youtube</button>
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">Instagram</button>
-
-    </div>
-</div>
-
-<div class="card" style="width:300px; min-height:400px; display:inline-block; margin:5px; align-items:center">
-
-    <div style="width:100%; height:100%; display:flex; justify-content:center; flex-direction: column; align-items:center">
-        <strong style="text-align:center"> Logs</strong>
-        <p style="text-align:center">Connected Platforms:</p>
-
-        <br />
-
-        <hr>
-
-        <p style="text-align:center">Platforms to connect:</p>
-
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">TikTok</button>
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">Youtube</button>
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">Instagram</button>
-
-    </div>
-</div>
-
-<div class="card" style="width:300px; min-height:400px; display:inline-block; margin:5px; align-items:center">
-
-    <div style="width:100%; height:100%; display:flex; justify-content:center; flex-direction: column; align-items:center">
-        <strong style="text-align:center"> Tasks Running</strong>
-        <p style="text-align:center">Connected Platforms:</p>
-
-        <br />
-
-        <hr>
-
-        <p style="text-align:center">Platforms to connect:</p>
-
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">TikTok</button>
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">Youtube</button>
-        <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">Instagram</button>
-
+        <!-- Tasks Running Card -->
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 text-center p-3">
+                <strong class="mb-2">Tasks Running</strong>
+                <p>0</p>
+            </div>
+        </div>
     </div>
 </div>

@@ -1,43 +1,91 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
-@model PlanViewModel
 @{
 }
 
- <div style="align-items:center; padding-top:30px">
-    <div class="card" style="width:300px; height:400px; display:inline-block; margin-left:1vw; align-items:center">
-
-        <div style="width:100%; height:100%; display:flex; justify-content:center; flex-direction: column; align-items:center">
-            <strong style="text-align:center">Free</strong>
-            <p style="text-align:center">content creations/day: 1</p>
-            <p style ="text-align:center">active task-limit: 1</p>
-            <p style="text-align:center">resource priority: low</p>
-
-            <div class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto" >Free Forever</div>
-        </div>
+<div class="container mt-4">
+    <div class="text-center mb-4">
+        <strong class="h2">Plans</strong>
     </div>
-    <div class="card" style="width:300px; height:400px; display:inline-block; margin-left:1vw; align-items:center">
 
-        <div style="width:100%; height:100%; display:flex; justify-content:center; flex-direction: column; align-items:center">
-            <strong style="text-align:center">Starter</strong>
-            <p style="text-align:center">content creations/day: 5</p>
-            <p style="text-align:center">active task-limit: 3</p>
-            <p style="text-align:center">resource priority: high</p>
-
-            <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto;">29$/month</button>
+    <div class="row">
+        <!-- Free Plan Card -->
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 text-center p-3">
+                <strong class="mb-2">Free</strong>
+                <p>Content creations/day: 1</p>
+                <p>Active task limit: 1</p>
+                <p>Resource priority: Low</p>
+                <div style="width:100%; min-height:100px; display:flex; justify-content:center; align-items:center">
+                    <div class="btn btn-outline-primary w-75 mt-3 mx-0">Free Forever</div>
+                </div>
+                <small class="text-muted">Requires account activation</small>
+            </div>
         </div>
-    </div>
-    <div class="card" style="width:300px; height:400px; display:inline-block; margin-left:1vw; align-items:center">
 
-        <div style="width:100%; height:100%; display:flex; justify-content:center; flex-direction: column; align-items:center">
-            <strong style="text-align:center">Pro</strong>
-            <p style="text-align:center">content creations/day: 20</p>
-            <p style="text-align:center">active task-limit: unlimited</p>
-            <p style="text-align:center">resource priority: realtime</p>
+        <!-- Starter Plan Card -->
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 text-center p-3">
+                <strong class="mb-2">Starter</strong>
+                <p>Content creations/day: 5</p>
+                <p>Active task limit: 3</p>
+                <p>Resource priority: High</p>
+                <div style="width:100%; min-height:100px; display:flex; justify-content:center; align-items:center">
+                    <div class="btn btn-primary w-75 mt-3 mx-0">29$/month</div>
+                </div>
+            </div>
+        </div>
 
-            <button class="page-link" style="height:50px; width:200px; border-radius:10px; display:flex; justify-content:center; align-items:center; margin:0 auto">39$/month</button>
+        <!-- Pro Plan Card -->
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 text-center p-3">
+                <strong class="mb-2">Pro</strong>
+                <p>Content creations/day: 20</p>
+                <p>Active task limit: Unlimited</p>
+                <p>Resource priority: Real-time</p>
+                <div style="width:100%; min-height:100px; display:flex; justify-content:center; align-items:center">
+                    <div class="btn btn-primary w-75 mt-3 mx-0">39$/month</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Business Plan Card -->
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 text-center p-3">
+                <strong class="mb-2">Business</strong>
+                <p>Content creations/day: 50</p>
+                <p>Active task limit: Unlimited</p>
+                <p>Resource priority: High</p>
+                <div style="width:100%; min-height:100px; display:flex; justify-content:center; align-items:center">
+                    <div class="btn btn-primary w-75 mt-3 mx-0">99$/month</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enterprise Plan Card -->
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 text-center p-3">
+                <strong class="mb-2">Enterprise</strong>
+                <p>Content creations/day: Unlimited</p>
+                <p>Active task limit: Unlimited</p>
+                <p>Resource priority: Highest</p>
+                <div style="width:100%; min-height:100px; display:flex; justify-content:center; align-items:center">
+                    <div class="btn btn-primary w-75 mt-3 mx-0">199$/month</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Plan Card -->
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 text-center p-3">
+                <strong class="mb-2">Custom</strong>
+                <p>Tailored to your needs</p>
+                <p>Contact us for a personalized plan</p>
+                <div style="width:100%; min-height:100px; display:flex; justify-content:center; align-items:center">
+                    <div class="btn btn-primary w-75 mt-3 mx-0">Contact Sales</div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-

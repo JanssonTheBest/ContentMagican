@@ -2,11 +2,8 @@
 
 namespace ContentMagican.Models
 {
-    public class SettingsViewModel : Controller
+    public class SettingsViewModel
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+      
     }
 }

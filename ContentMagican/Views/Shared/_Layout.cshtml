@@ -4,51 +4,176 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ContentMagican</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ContentMagican.styles.css" asp-append-version="true" />
+
+    <style>
+        /* Hide the dropdown arrow */
+        .dropdown-toggle::after {
+            display: none;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            width: 20vw;
+            min-width: 100px;
+            height: 100vh;
+            position: fixed;
+            top: 0; /* Make it start from the top */
+            left: 0;
+            z-index: 1050; /* Higher than top-navbar */
+            background-color: #f8f9fa;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+            .sidebar .logo {
+                width: 100%;
+                height: 150px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+
+                .sidebar .logo img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: contain;
+                }
+
+            .sidebar .nav-link {
+                border-radius: 0;
+                text-decoration: none;
+                color: dimgray;
+            }
+
+        /* Main container styling */
+        .main-container {
+            margin-left: 20vw;
+            width: calc(100% - 20vw);
+            padding: 20px;
+        }
+
+        /* Top navbar */
+        .top-navbar {
+            height: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-right: 10px;
+            position: relative; /* Make sure it doesn’t interfere with sidebar */
+            z-index: 1000;
+        }
+
+        /* Responsive sidebar to dropdown menu below 800px */
+        @@media (max-width: 800px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-container {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .menu-dropdown {
+                display: block;
+            }
+        }
+
+        /* Style the dropdown menu items */
+        .menu-dropdown .dropdown-menu {
+            width: 100%;
+            background-color: #f8f9fa;
+            border: none;
+        }
+
+        .menu-dropdown .dropdown-item {
+            color: dimgrey;
+        }
+
+        /* Footer styling */
+        .footer {
+            background-color: #212529;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            z-index:2000;
+        }
+    </style>
+
 </head>
+
 <body>
-    <div class="d-flex flex-column flex-shrink-0 p-0 bg-light" style="width: 20vw; height:100vh; position:fixed; z-index:1000; min-width:100px">
-        <div class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none" style="background-image:url(/Resources/ContentMagican.png); background-position:center; min-width:92px; background-size:cover; width:18vw; max-width:200px; height:auto; padding-bottom:90px; margin-left:5px; align-items:center">
+    <div class="top-navbar px-3 d-flex justify-content-between">
+        <!-- Menu dropdown for mobile screens -->
+        <div class="menu-dropdown dropdown d-md-none me-3">
+            <button class="btn btn-dark dropdown-toggle" type="button" id="menuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                Menu
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="menuDropdown">
+                <li><a class="dropdown-item" asp-controller="Plan" asp-action="Main">Plan</a></li>
+                <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Main">Dashboard</a></li>
+                <li><a class="dropdown-item" asp-controller="Tasks" asp-action="Main">Tasks</a></li>
+                <li><a class="dropdown-item" asp-controller="Settings" asp-action="Main">Settings</a></li>
+            </ul>
+        </div>
+
+        <!-- Align AjgamerPro and dropdown button to the right -->
+        <div class="d-flex align-items-center ms-auto">
+            <p class="mb-0 me-2">AjgamerPro</p>
+            <div class="dropdown">
+                <button class="btn btn-dark dropdown-toggle" type="button" id="accountDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="width: 45px; height: 45px; border-radius: 50%;"></button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Account</a></li>
+                    <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar for larger screens -->
+    <div class="sidebar d-none d-md-flex flex-column flex-shrink-0 bg-light">
+        <div class="logo">
+            <img src="/Resources/ContentMagican.png" alt="ContentMagican Logo" />
         </div>
         <ul class="nav nav-pills flex-column mb-auto">
             <li>
-                <a asp-controller="Plan" asp-action="Main" class="nav-link page-link" style="border-radius:0px; text-decoration:none; color:dimgray">
-                    Plan
-                </a>
+                <a asp-controller="Plan" asp-action="Main" class="nav-link page-link">Plan</a>
             </li>
             <li>
-                <a asp-controller="Dashboard" asp-action="Main" class="nav-link page-link" style="border-radius:0px; text-decoration:none; color:dimgray">
-                    Dashboard
-                </a>
+                <a asp-controller="Dashboard" asp-action="Main" class="nav-link page-link">Dashboard</a>
             </li>
-
             <li>
-                <a asp-controller="Tasks" asp-action="Main" class="nav-link page-link" style="border-radius:0px; text-decoration:none; color:dimgray">
-                    Tasks
-                </a>
+                <a asp-controller="Tasks" asp-action="Main" class="nav-link page-link">Tasks</a>
             </li>
-
             <li>
-                <a asp-controller="Settings" asp-action="Main" class="nav-link page-link" style="border-radius:0px; text-decoration:none; color:dimgray">
-                    Settings
-                </a>
+                <a asp-controller="Settings" asp-action="Main" class="nav-link page-link">Settings</a>
             </li>
         </ul>
-        
     </div>
 
-
-    <div class="container" style="width:80vw; float:right" " >
+    <div class="main-container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <br />
+    <br />
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 ContentMagican. All rights reserved.</p>
+    </footer>
+
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -26,3 +26,16 @@ body {
     height:100px;
     background-color:black;
 }
+
+.CustomHeaderLabel {
+    display:flex;
+    justify-content:left;
+    height: 100px;
+    width: 100%;
+}
+
+.CustomHeaderLabel Strong{
+    color:black;
+    font-size:30px;
+    margin:20px;
+}

@@ -1,0 +1,98 @@
+﻿@{
+    ViewData["Title"] = "Video Submission Form";
+}
+
+<h1 style="text-align: center;">Reddit Story Video Automation Settings</h1>
+
+<div class="container">
+    <form asp-action="SubmitVideo" method="post">
+        <!-- Video Dimensions Dropdown -->
+        <div class="mb-3">
+            <label for="videoDimensions" class="form-label">Video Dimensions</label>
+            <select class="form-select" id="videoDimensions" name="videoDimensions">
+                <option value="1920x1080">1920x1080</option>
+                <option value="1280x720">1280x720</option>
+                <option value="640x480">640x480</option>
+                <!-- Add more options as needed -->
+            </select>
+        </div>
+
+        <!-- Vertical Resolution Checkbox -->
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="verticalResolution" name="verticalResolution" checked>
+            <label class="form-check-label" for="verticalResolution">Vertical Resolution</label>
+        </div>
+
+        <!-- Text Style Dropdown -->
+        <div class="mb-3">
+            <label for="textStyle" class="form-label">Text Style</label>
+            <select class="form-select" id="textStyle" name="textStyle">
+                <option value="Bold">Bold</option>
+                <option value="Italic">Italic</option>
+                <option value="Underline">Underline</option>
+                <!-- Add more options as needed -->
+            </select>
+        </div>
+
+        <!-- Gameplay Video Choice Dropdown -->
+        <div class="mb-3">
+            <label for="gameplayVideo" class="form-label">Gameplay Video</label>
+            <select class="form-select" id="gameplayVideo" name="gameplayVideo">
+                <option value="Gameplay1">Minecraft Parkour</option>
+                <option value="Gameplay2">Subway Surfers</option>
+                <option value="Gameplay3">GTA Race</option>
+                <!-- Add more options as needed -->
+            </select>
+        </div>
+
+        <!-- Platform Choice Dropdown -->
+        <div class="mb-3">
+            <label for="platform" class="form-label">Platform</label>
+            <select class="form-select" id="platform" name="platform">
+                <option value="YouTube-Shorts">YouTube-Shorts</option>
+                <option value="Tiktok">Tiktok</option>
+                <option value="Instagram-Reels">Instagram-Reels</option>
+                <!-- Add more options as needed -->
+            </select>
+        </div>
+
+        <!-- Approximate Video Length Range Selection -->
+        <div class="mb-3">
+            <label class="form-label">Approximate Video Length (minutes)</label>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="videoLengthFrom" class="form-label">Minimum Length</label>
+                    <select class="form-select" id="videoLengthFrom" name="videoLengthFrom">
+                        <option value="0">0 min</option>
+                        <option value="1">1 min</option>
+                        <option value="2">2 min</option>
+                        <!-- Add more options as needed -->
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="videoLengthTo" class="form-label">Maximum Length</label>
+                    <select class="form-select" id="videoLengthTo" name="videoLengthTo">
+                        <option value="5">5 min</option>
+                        <option value="10">10 min</option>
+                        <option value="15">15 min</option>
+                        <!-- Add more options as needed -->
+                    </select>
+                </div>
+            </div>
+            <small class="form-text text-muted">The video length can be any duration between the selected minimum and maximum times.</small>
+        </div>
+
+        <!-- Video Title Input -->
+        <div class="mb-3">
+            <label for="videoTitle" class="form-label">Video Title</label>
+            <input type="text" class="form-control" id="videoTitle" name="videoTitle" placeholder="Enter video title">
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-flex justify-content-end mb-3" style="display:flex; justify-content:right;">
+            <button type="submit" class="btn btn-primary" id="nextButton" style="margin:5px; height:40px">
+                Next
+            </button>
+        </div>
+    </form>
+</div>
