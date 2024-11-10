@@ -5,7 +5,8 @@
 <h1 style="text-align: center;">Reddit Story Video Automation Settings</h1>
 
 <div class="container">
-    <form asp-action="SubmitVideo" method="post">
+
+    <form action="@Url.Action("CreateRedditVideoAutomationTask","Tasks")" method="post">
         <!-- Video Dimensions Dropdown -->
         <div class="mb-3">
             <label for="videoDimensions" class="form-label">Video Dimensions</label>

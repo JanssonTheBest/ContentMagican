@@ -8,8 +8,8 @@ namespace ContentMagican.Models
         {
             Tasks = GenerateTestData();
         }
+        
         public List<Task> Tasks { get; set; }
-
 
         public List<Task> GenerateTestData()
         {
@@ -18,6 +18,7 @@ namespace ContentMagican.Models
             new Task { Name = "Task 1",Type = "Reddit Story Video Automation", Status = "Active", Created = DateTime.Now.AddDays(-5),Id = 33 },
             new Task { Name = "Task 2", Type = "Youtube automation", Status = "Active", Created = DateTime.Now.AddDays(-3), Id = 22 },
         };
+
         }
     }
 

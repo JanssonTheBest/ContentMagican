@@ -1,9 +1,75 @@
+using ContentMagican.Database;
+using ContentMagican.Handlers;
+using ContentMagican.MiddleWare;
+using ContentMagican.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+
+//Configurate entityframework
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<TaskService>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddScoped<JwtAuthorizationHandler>();
+
+// Load JWT settings from configuration
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+
+
+var tokenValidationParameters = new TokenValidationParameters
+{
+    ValidateIssuer = true,
+    ValidateAudience = true,
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    ValidIssuer = jwtSettings["Issuer"],
+    ValidAudience = jwtSettings["Audience"],
+    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]))
+};
+
+// Configure JWT authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = tokenValidationParameters;
+
+
+
+});
+
+builder.Services.AddSingleton(tokenValidationParameters);
+
+
+
+builder.Services.AddAuthorization();
+
+
+
 var app = builder.Build();
+
+
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -13,15 +79,25 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseMiddleware<JwtTokenValidationMiddleware>();
+
+
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
+
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Dashboard}/{action=Main}/{id?}");
 
 app.Run();
+
+

@@ -1,4 +1,13 @@
-﻿<!DOCTYPE html>
+﻿@using ContentMagican.Services;
+@using ContentMagican.Database;
+@inject UserService userService;
+
+
+@{
+    
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -102,7 +111,7 @@
             padding: 20px;
             text-align: center;
             width: 100%;
-            z-index:2000;
+            z-index: 2000;
         }
     </style>
 
@@ -123,17 +132,26 @@
             </ul>
         </div>
 
-        <!-- Align AjgamerPro and dropdown button to the right -->
-        <div class="d-flex align-items-center ms-auto">
-            <p class="mb-0 me-2">AjgamerPro</p>
-            <div class="dropdown">
-                <button class="btn btn-dark dropdown-toggle" type="button" id="accountDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="width: 45px; height: 45px; border-radius: 50%;"></button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
-                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Account</a></li>
-                    <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">Logout</a></li>
-                </ul>
-            </div>
-        </div>
+        
+
+        @if (Context.Request.Cookies.TryGetValue("jwtToken", out var token))
+        {
+            if (userService.ValidateJwtToken(token, out _))
+            {
+                <div class="d-flex align-items-center ms-auto">
+                    <p class="mb-0 me-2">@userService.RetrieveUserInformation(Context).GetAwaiter().GetResult().Username</p>
+                    <div class="dropdown">
+                        <button class="btn btn-dark dropdown-toggle" type="button" id="accountDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="width: 45px; height: 45px; border-radius: 50%;"></button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+                            <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Account</a></li>
+                            <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            }
+        }
+
+
     </div>
 
     <!-- Sidebar for larger screens -->

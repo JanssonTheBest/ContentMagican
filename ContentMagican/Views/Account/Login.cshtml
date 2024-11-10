@@ -1,0 +1,85 @@
+﻿@model LoginViewModel
+
+
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card p-4 shadow-sm">
+                <div class="text-center mb-4">
+                    <h3>Login to Content Magican</h3>
+                    <p class="text-muted">Access your account to continue</p>
+                </div>
+
+                <form method="post" action="@Url.Action("LoginAccount","Account")">
+                    <div class="form-group mb-3">
+                        <label for="email" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-block">Login</button>
+                    </div>
+
+                    <div class="text-center mb-3">
+                        <a href="/forgot-password" class="text-muted">Forgot password?</a>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="mb-0">Don't have an account? <a href="@Url.Action("Register", "Account")">Sign up</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* <script type="text/javascript">
+    window.addEventListener('load', function () {
+        var token = getCookie('jwtToken');
+        if (token != null && token != "") {
+            var formData = new FormData();
+            formData.append('jwtToken', token);
+
+            fetch('@Url.Action("Login", "Account")', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    // If the response has a redirect URL, follow it
+                    window.location.href = response.url;
+                } else {
+                    return response.json(); // Assume JSON response if not redirected
+                }
+            })
+            .then(data => {
+                // Optionally handle any JSON response here if no redirect occurred
+                if (data && data.redirectUrl) {
+                    // In case the server sends a redirect URL in JSON format
+                    window.location.href = data.redirectUrl;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    });
+
+    function getCookie(name) {
+        let cookieArr = document.cookie.split(";");
+        for (let i = 0; i < cookieArr.length; i++) {
+            let cookiePair = cookieArr[i].split("=");
+            if (name === cookiePair[0].trim()) {
+                return decodeURIComponent(cookiePair[1]);
+            }
+        }
+        return null;
+    }
+</script>
+ *@
