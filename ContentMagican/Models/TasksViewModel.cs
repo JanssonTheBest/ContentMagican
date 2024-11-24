@@ -1,25 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ContentMagican.Database;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ContentMagican.Models
 {
     public class TasksViewModel
     {
-        public TasksViewModel()
-        {
-            Tasks = GenerateTestData();
-        }
-        
-        public List<Task> Tasks { get; set; }
-
-        public List<Task> GenerateTestData()
-        {
-            return new List<Task>
-        {
-            new Task { Name = "Task 1",Type = "Reddit Story Video Automation", Status = "Active", Created = DateTime.Now.AddDays(-5),Id = 33 },
-            new Task { Name = "Task 2", Type = "Youtube automation", Status = "Active", Created = DateTime.Now.AddDays(-3), Id = 22 },
-        };
-
-        }
+        public List<_Task> Tasks { get; set; }
     }
 
     public class Task

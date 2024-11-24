@@ -22,6 +22,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<TaskService>();
+builder.Services.AddScoped<FFmpegService>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

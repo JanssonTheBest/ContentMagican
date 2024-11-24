@@ -16,16 +16,19 @@ namespace ContentMagican.Controllers
         }
 
 
-        public IActionResult Main()
+        public async Task<IActionResult> Main()
         {
-            return View(new TasksViewModel());
+            return View(new TasksViewModel()
+            {
+                Tasks = await _taskService.GetUsersTasks(HttpContext)
+            });
         }
 
         [HttpGet]
         public IActionResult DeleteTasks(long taskId)
         {
-
-            return View();
+            _taskService.DeleteUserTask(HttpContext,taskId).GetAwaiter().GetResult();
+            return RedirectToAction("Main","Tasks");
         }
 
         [HttpGet]
@@ -33,6 +36,61 @@ namespace ContentMagican.Controllers
         {
 
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditTasks(long taskId)
+        {
+
+            var tasks = await _taskService.GetUsersTasks(HttpContext);
+
+            var task = tasks.Where(a => a.Id == taskId).FirstOrDefault();
+
+            if(task == default)
+            {
+                return RedirectToAction("CreateTask", "Tasks");
+            }
+
+            var videoAutomation = await _taskService.GetVideoAutomationInfo(taskId);
+
+            return View("EdditTaskRedditVideoAutomationSettings", new EditTaskViewModel()
+            {
+                AdditionalInfo = task.AdditionalInfo,
+                GameplayVideo = videoAutomation.FFmpegString,
+                TextStyle = videoAutomation.FFmpegString,
+                Platform = "",
+                VideoDimensions = videoAutomation.FFmpegString,
+                VerticalResolution = true,
+                VideosPerDay = videoAutomation.Interval,
+                TaskId = taskId,
+                VideoLengthFrom = 1,
+                VideoLengthTo = 5,
+                VideoTitle = videoAutomation.FFmpegString
+            });
+
+           
+        }
+
+        [HttpGet]
+        public IActionResult SubmitEditTasks(
+             string videoDimensions,
+    bool verticalResolution,
+    string textStyle,
+    string gameplayVideo,
+    string platform,
+    int videoLengthFrom,
+    int videoLengthTo,
+    int videosPerDay,
+    string subreddit,
+    string videoTitle,
+            long taskId
+            )
+        {
+
+
+
+            return RedirectToAction("Main", "Tasks");
+           
         }
 
         [HttpPost]
@@ -50,15 +108,17 @@ namespace ContentMagican.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateRedditVideoAutomationTask(
-           string videoDimensions,
-           bool verticalResolution,
-           string textStyle,
-           string gameplayVideo,
-           string platform,
-           int videoLengthFrom,
-           int videoLengthTo,
-           string videoTitle)
+        public async Task<IActionResult> CreateRedditVideoAutomationTask(
+    string videoDimensions,
+    bool verticalResolution,
+    string textStyle,
+    string gameplayVideo,
+    string platform,
+    int videoLengthFrom,
+    int videoLengthTo,
+    int videosPerDay,
+    string subreddit,
+    string videoTitle)
         {
             // Validate the parameters here if needed
             if (string.IsNullOrWhiteSpace(videoTitle))
@@ -66,17 +126,28 @@ namespace ContentMagican.Controllers
                 ModelState.AddModelError("videoTitle", "Video title is required.");
             }
 
-            if (!ModelState.IsValid)
+            // Validate videosPerDay
+            if (videosPerDay < 1)
             {
-                return View();
+                ModelState.AddModelError("videosPerDay", "Please select a valid number of videos per day.");
             }
 
 
+            await _taskService.CreateRedditVideoAutomationTask(videoDimensions,
+     verticalResolution,
+     textStyle,
+     gameplayVideo,
+     platform,
+     videoLengthFrom,
+     videoLengthTo,
+     videosPerDay, // Added this parameter
+     videoTitle,
+     subreddit,
+     HttpContext);
 
-
-           
-            return RedirectToAction("Main"); 
+            return RedirectToAction("Main", "Tasks");
         }
+
     }
 }
 

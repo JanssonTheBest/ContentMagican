@@ -28,7 +28,7 @@
                     @for (var i = 0; i < Model.Tasks.Count; i++)
                     {
                         <tr>
-                            <td>@Model.Tasks[i].Name</td>
+                            <td>@Model.Tasks[i].Description</td>
                             <td>@Model.Tasks[i].Type</td>
                             <td>@Model.Tasks[i].Status</td>
                             <td>@Model.Tasks[i].Created.ToString("yyyy-MM-dd")</td>
@@ -39,7 +39,7 @@
                                         Actions
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="actionDropdown">
-                                        <a class="dropdown-item" href="#">Edit</a>
+                                        <a class="dropdown-item" href="@Url.Action("EditTasks","Tasks", new { taskId = Model.Tasks[i].Id })">Edit</a>
                                         <a class="dropdown-item" href="#">View Details</a>
                                         <a class="dropdown-item text-danger" href="@Url.Action("DeleteTasks", "Tasks", new { taskId = Model.Tasks[i].Id })">Delete</a>
                                     </div>

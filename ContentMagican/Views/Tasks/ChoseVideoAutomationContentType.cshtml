@@ -1,4 +1,5 @@
-﻿@*
+﻿@using ContentMagican.Services
+@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
@@ -17,7 +18,7 @@
 
             <div class="overflow-scroll">
 
-                @for (int i = 0; i < 9; i++)
+                @for (int i = 0; i < Enum.GetNames(typeof(TaskService.TaskSubTypes)).Length; i++)
                 {
                     <!-- First Box -->
                     <div class="card" style="align-items:center; padding:10px; margin:3px;">
@@ -27,7 +28,7 @@
                             <input type="radio" class="radioButton" id="q@i" name="r" value="@i" style="width:10%">
                             <!-- Associated label for better accessibility -->
                             <label for="q@i" style="width:90%; margin:0 auto">
-                                Reddit Stories @i
+                                @Enum.GetNames(typeof(TaskService.TaskSubTypes))[i].Replace('_', ' ')
                             </label>
                         </div>
                     </div>

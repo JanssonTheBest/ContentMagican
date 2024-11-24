@@ -9,5 +9,6 @@
         public string Description { get; set; }
         public int Status { get; set; }
         public DateTime Created { get; set; }
+        public string AdditionalInfo { get; set; }
     }
 }

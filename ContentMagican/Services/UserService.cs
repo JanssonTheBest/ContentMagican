@@ -37,6 +37,7 @@ namespace ContentMagican.Services
         {
             string emailPattern = @"^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$";
 
+
             if (string.IsNullOrEmpty(registerModel.Email))
             {
                 return RegisterCodes.Email_Is_Not_Valid;
