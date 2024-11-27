@@ -186,8 +186,13 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>&copy; 2024 ContentMagican. All rights reserved.</p>
+        <p>
+            &copy; 2024 ContentMagican. All rights reserved.
+            <a href="@Url.Action("Privacy", "Info")">Privacy Policy</a> |
+            <a href="@Url.Action("Terms", "Info")">Terms of Service</a>
+        </p>
     </footer>
+
 
     @await RenderSectionAsync("Scripts", required: false)
 

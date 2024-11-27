@@ -18,9 +18,13 @@ namespace ContentMagican.Controllers
 
         public async Task<IActionResult> Main()
         {
+
+            var list = (await _taskService.GetUsersTasks(HttpContext));
+            list.RemoveAll(a => a.Status == (int)TaskService.TaskStatus.deleted);
+
             return View(new TasksViewModel()
             {
-                Tasks = await _taskService.GetUsersTasks(HttpContext)
+                Tasks = list
             });
         }
 
@@ -38,60 +42,60 @@ namespace ContentMagican.Controllers
             return View();
         }
 
-        [HttpGet]
-        public async Task<IActionResult> EditTasks(long taskId)
-        {
+    //    [HttpGet]
+    //    public async Task<IActionResult> EditTasks(long taskId)
+    //    {
 
-            var tasks = await _taskService.GetUsersTasks(HttpContext);
+    //        var tasks = await _taskService.GetUsersTasks(HttpContext);
 
-            var task = tasks.Where(a => a.Id == taskId).FirstOrDefault();
+    //        var task = tasks.Where(a => a.Id == taskId).FirstOrDefault();
 
-            if(task == default)
-            {
-                return RedirectToAction("CreateTask", "Tasks");
-            }
+    //        if(task == default)
+    //        {
+    //            return RedirectToAction("CreateTask", "Tasks");
+    //        }
 
-            var videoAutomation = await _taskService.GetVideoAutomationInfo(taskId);
+    //        var videoAutomation = await _taskService.GetVideoAutomationInfo(taskId);
 
-            return View("EdditTaskRedditVideoAutomationSettings", new EditTaskViewModel()
-            {
-                AdditionalInfo = task.AdditionalInfo,
-                GameplayVideo = videoAutomation.FFmpegString,
-                TextStyle = videoAutomation.FFmpegString,
-                Platform = "",
-                VideoDimensions = videoAutomation.FFmpegString,
-                VerticalResolution = true,
-                VideosPerDay = videoAutomation.Interval,
-                TaskId = taskId,
-                VideoLengthFrom = 1,
-                VideoLengthTo = 5,
-                VideoTitle = videoAutomation.FFmpegString
-            });
+    //        return View("EdditTaskRedditVideoAutomationSettings", new EditTaskViewModel()
+    //        {
+    //            AdditionalInfo = task.AdditionalInfo,
+    //            GameplayVideo = videoAutomation.FFmpegString,
+    //            TextStyle = videoAutomation.FFmpegString,
+    //            Platform = "",
+    //            VideoDimensions = videoAutomation.FFmpegString,
+    //            VerticalResolution = true,
+    //            VideosPerDay = videoAutomation.Interval,
+    //            TaskId = taskId,
+    //            VideoLengthFrom = 1,
+    //            VideoLengthTo = 5,
+    //            VideoTitle = videoAutomation.FFmpegString
+    //        });
 
            
-        }
+    //    }
 
-        [HttpGet]
-        public IActionResult SubmitEditTasks(
-             string videoDimensions,
-    bool verticalResolution,
-    string textStyle,
-    string gameplayVideo,
-    string platform,
-    int videoLengthFrom,
-    int videoLengthTo,
-    int videosPerDay,
-    string subreddit,
-    string videoTitle,
-            long taskId
-            )
-        {
+    //    [HttpGet]
+    //    public IActionResult SubmitEditTasks(
+    //         string videoDimensions,
+    //bool verticalResolution,
+    //string textStyle,
+    //string gameplayVideo,
+    //string platform,
+    //int videoLengthFrom,
+    //int videoLengthTo,
+    //int videosPerDay,
+    //string subreddit,
+    //string videoTitle,
+    //        long taskId
+    //        )
+    //    {
 
 
 
-            return RedirectToAction("Main", "Tasks");
+    //        return RedirectToAction("Main", "Tasks");
            
-        }
+    //    }
 
         [HttpPost]
         public IActionResult ChoseTaskType(string r)

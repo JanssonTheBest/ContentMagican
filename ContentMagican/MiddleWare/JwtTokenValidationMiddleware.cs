@@ -53,7 +53,7 @@ namespace ContentMagican.MiddleWare
                 }
                 else
                 {
-                    if (context.Request.Path.StartsWithSegments("/Account") || context.Request.Path.StartsWithSegments("/public-endpoint"))
+                    if (context.Request.Path.StartsWithSegments("/Account") || context.Request.Path.StartsWithSegments("/Info"))
                     {
                         // Allow unauthenticated users to access /Account and public endpoints
                         await _next(context);

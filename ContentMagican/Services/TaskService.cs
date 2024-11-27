@@ -17,19 +17,20 @@ namespace ContentMagican.Services
         public enum TaskTypes
         {
             Video_Automation,
-            Blog_Automation
+            //Blog_Automation
         }
 
         public enum TaskSubTypes
         {
             Reddit_Stories,
-            AI_Content
+            //AI_Content
         }
 
         public enum TaskStatus
         {
             active,
             inactive,
+            deleted,
         }
 
         public async Task CreateRedditVideoAutomationTask(string videoDimensions,
@@ -49,12 +50,12 @@ namespace ContentMagican.Services
             var task = new _Task()
             {
                 Created = DateTime.UtcNow,
-                Description = videoTitle,
+                Description = videoTitle ?? "",
                 Status = (int)TaskStatus.active,
                 Type = (int)TaskTypes.Video_Automation,
                 Subtype = (int)TaskSubTypes.Reddit_Stories,
                 UserId = user.Id,
-                AdditionalInfo = subReddit
+                AdditionalInfo = subReddit ?? ""
             };
 
 
@@ -75,8 +76,8 @@ namespace ContentMagican.Services
         public async Task<List<_Task>> GetUsersTasks(HttpContext ctx)
         {
             var user = await _userService.RetrieveUserInformation(ctx);
-            var tasks = _applicationDbContext.Task.Where(a => a.UserId == user.Id).ToList();
-            return tasks;
+            var tasks = _applicationDbContext.Task.Where(a => a.UserId == user.Id);
+            return tasks.ToList();
         }
 
         public async Task DeleteUserTask(HttpContext ctx, long taskId)
@@ -89,7 +90,8 @@ namespace ContentMagican.Services
                 return;
             }
 
-            _applicationDbContext.Task.Remove(task);
+            task.Status = (int)TaskStatus.deleted;
+
             await _applicationDbContext.SaveChangesAsync();
         }
 

@@ -11,9 +11,12 @@
         </a>
     </div>
 
-    <div class="card shadow-sm p-3 mb-5 bg-body rounded">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover mb-0" id="table" data-toggle="table" data-height="460">
+    <!-- Added 'border' class to the container div -->
+    <div class="p-3 mb-5 border rounded">
+        <!-- Set overflow to visible for dropdowns -->
+        <div class="table-responsive" style="overflow: visible !important;">
+            <!-- Updated table classes -->
+            <table class="table mb-0" id="table" data-toggle="table" data-height="460">
                 <thead class="table-light">
                     <tr>
                         <th scope="col" data-field="name">Task</th>
@@ -24,7 +27,7 @@
                         <th scope="col" data-field="actions">Actions</th>
                     </tr>
                 </thead>
-                <tbody style="background-color:white">
+                <tbody>
                     @for (var i = 0; i < Model.Tasks.Count; i++)
                     {
                         <tr>
@@ -34,12 +37,11 @@
                             <td>@Model.Tasks[i].Created.ToString("yyyy-MM-dd")</td>
                             <td>@Model.Tasks[i].Id</td>
                             <td>
-                                <div class="dropdown">
+                                <div class="dropdown" style="position: relative;">
                                     <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="actionDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         Actions
                                     </button>
-                                    <div class="dropdown-menu" aria-labelledby="actionDropdown">
-                                        <a class="dropdown-item" href="@Url.Action("EditTasks","Tasks", new { taskId = Model.Tasks[i].Id })">Edit</a>
+                                    <div class="dropdown-menu" aria-labelledby="actionDropdown" style="z-index: 1050;">
                                         <a class="dropdown-item" href="#">View Details</a>
                                         <a class="dropdown-item text-danger" href="@Url.Action("DeleteTasks", "Tasks", new { taskId = Model.Tasks[i].Id })">Delete</a>
                                     </div>
@@ -53,19 +55,53 @@
     </div>
 </div>
 
-
 <style>
-    /* Add consistent border styles */
-    #table thead th {
-        border-bottom: 2px solid #ddd !important;
+    /* Add a subtle border to the container */
+    .border {
+        border: 1px solid #dee2e6 !important;
+        background-color: #fff; /* Optional: add a white background */
     }
 
-    #table tbody tr td {
-        border-top: 1px solid #f0f0f0 !important;
+    /* Remove borders from table cells and headers */
+    .table th,
+    .table td {
+        border: none !important;
     }
-    /* Table padding for a cleaner look */
+
+    /* Style table headers for better visibility */
+    .table thead th {
+        background-color: #f8f9fa !important; /* Light grey background */
+        color: #212529 !important; /* Dark text color */
+        font-weight: bold;
+    }
+
+    /* Optional: Add a subtle bottom border to rows */
+    .table tbody tr {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    /* Adjust table padding and font */
     .table td, .table th {
-        padding: 1rem;
+        padding: 0.75rem;
         vertical-align: middle;
+        font-size: 0.9rem;
+    }
+
+    /* Optional: Add hover effect to rows */
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Adjust the dropdown menu to be on top */
+    .dropdown-menu {
+        position: absolute !important;
+        z-index: 1050;
+        top: 100%;
+        left: 0;
+    }
+
+    /* Ensure the table container does not clip content */
+    .table-responsive {
+        overflow: visible !important;
     }
 </style>
