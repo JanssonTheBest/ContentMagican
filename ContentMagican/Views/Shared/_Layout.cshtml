@@ -2,14 +2,24 @@
 @using ContentMagican.Database;
 @inject UserService userService;
 
-
 @{
-    
+    var isAuthenticated = false;
+    var token = string.Empty;
+    User user = null;
+    if (Context.Request.Cookies.TryGetValue("jwtToken", out token))
+    {
+        if (userService.ValidateJwtToken(token, out _))
+        {
+            isAuthenticated = true;
+            user = await userService.RetrieveUserInformation(Context);
+        }
+    }
 }
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Head content remains the same -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ContentMagican</title>
@@ -17,7 +27,6 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ContentMagican.styles.css" asp-append-version="true" />
     <link rel="icon" type="image/x-icon" href="~/favicon1.ico">
-
 
     <style>
         /* Hide the dropdown arrow */
@@ -27,59 +36,51 @@
 
         /* Sidebar styling */
         .sidebar {
-            width: 20vw;
-            min-width: 100px;
-            height: 100vh;
+            width: 150px;
+            min-width: 150px;
+            height: calc(100vh - 70px); /* Adjusted for navbar height */
             position: fixed;
-            top: 0; /* Make it start from the top */
+            top: 70px; /* Adjusted for navbar height */
             left: 0;
-            z-index: 1050; /* Higher than top-navbar */
-            background-color: #f8f9fa;
+            z-index: 1050;
+            background: rgba(248, 249, 250); /* Semi-transparent background */
             padding: 0;
             display: flex;
             flex-direction: column;
         }
 
-            .sidebar .logo {
-                width: 100%;
-                height: 150px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                overflow: hidden;
-            }
-
-                .sidebar .logo img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: contain;
-                }
-
-            .sidebar .nav-link {
-                border-radius: 0;
-                text-decoration: none;
-                color: dimgray;
-            }
-
-        /* Main container styling */
-        .main-container {
-            margin-left: 20vw;
-            width: calc(100% - 20vw);
-            padding: 20px;
+        .sidebar .nav-link {
+            border-radius: 0;
+            text-decoration: none;
+            color: #333;
         }
 
         /* Top navbar */
         .top-navbar {
-            height: 50px;
+            height: 70px; /* Adjusted to fit the logo */
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding-right: 10px;
-            position: relative; /* Make sure it doesn’t interfere with sidebar */
-            z-index: 1000;
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 2000;
+            background: rgba(255, 255, 255); /* Semi-transparent background */
+            border-bottom: 1px solid #ccc;
+            position: relative; /* Added for positioning child elements */
         }
 
-        /* Responsive sidebar to dropdown menu below 800px */
+        /* Main container styling */
+        .main-container {
+            margin-left: 150px; /* Width of the sidebar */
+            padding: 20px;
+            margin-top: 70px; /* Height of the navbar */
+            position: relative;
+            z-index: 1; /* Ensure it appears above the background */
+        }
+
+        /* Responsive adjustments */
         @@media (max-width: 800px) {
             .sidebar {
                 display: none;
@@ -92,107 +93,174 @@
 
             .menu-dropdown {
                 display: block;
+                position: absolute;
+                left: 20px;
+                top: 15px;
+                z-index: 2001; /* Ensure it appears above the background */
             }
-        }
 
-        /* Style the dropdown menu items */
-        .menu-dropdown .dropdown-menu {
-            width: 100%;
-            background-color: #f8f9fa;
-            border: none;
-        }
+            /* Center the logo on small screens */
+            .top-navbar {
+                position: relative;
+            }
 
-        .menu-dropdown .dropdown-item {
-            color: dimgrey;
+            .top-navbar .navbar-logo {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            /* Position user info on the right */
+            .top-navbar .ms-auto {
+                position: absolute;
+                right: 20px;
+                top: 15px;
+                margin-left: 0;
+            }
         }
 
         /* Footer styling */
+        /* Footer styling */
         .footer {
-            background-color: #212529;
+            background: rgba(33, 37, 41); /* Semi-transparent background */
             color: white;
-            padding: 20px;
-            text-align: center;
+            padding: 10px 0;
             width: 100%;
             z-index: 2000;
+            position: relative;
+        }
+
+
+
+        /* Set the GIF as the background image */
+        body {
+            background-image: url('');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
         }
     </style>
-
 </head>
-
 <body>
-    <div class="top-navbar px-3 d-flex justify-content-between">
-        <!-- Menu dropdown for mobile screens -->
-        <div class="menu-dropdown dropdown d-md-none me-3">
-            <button class="btn btn-dark dropdown-toggle" type="button" id="menuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                Menu
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="menuDropdown">
-                <li><a class="dropdown-item" asp-controller="Plan" asp-action="Main">Plan</a></li>
-                <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Main">Dashboard</a></li>
-                <li><a class="dropdown-item" asp-controller="Tasks" asp-action="Main">Tasks</a></li>
-                <li><a class="dropdown-item" asp-controller="Settings" asp-action="Main">Settings</a></li>
-            </ul>
-        </div>
-
-        
-
-        @if (Context.Request.Cookies.TryGetValue("jwtToken", out var token))
+    <!-- Top navbar -->
+    <div class="top-navbar">
+        @if (isAuthenticated)
         {
-            if (userService.ValidateJwtToken(token, out _))
-            {
-                <div class="d-flex align-items-center ms-auto">
-                    <p class="mb-0 me-2">@userService.RetrieveUserInformation(Context).GetAwaiter().GetResult().Username</p>
-                    <div class="dropdown">
-                        <button class="btn btn-dark dropdown-toggle" type="button" id="accountDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="width: 45px; height: 45px; border-radius: 50%;"></button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
-                            <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Account</a></li>
-                            <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">Logout</a></li>
-                        </ul>
-                    </div>
-                </div>
-            }
+            <!-- Menu dropdown for mobile screens -->
+            <div class="menu-dropdown dropdown d-md-none me-3">
+                <button class="btn btn-transparent dropdown-toggle" type="button" id="menuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="/Resources/menu.png" alt="Menu Icon" class="me-2" style="width: 40px; height: 40px;" />
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="menuDropdown">
+                    <li>
+                        <a class="dropdown-item" asp-controller="Plan" asp-action="Main">
+                            <img src="/Resources/plan.png" alt="Plan Icon" class="me-2" style="width: 20px; height: 20px;" />
+                            Plan
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Dashboard" asp-action="Main">
+                            <img src="/Resources/dashboard.png" alt="Dashboard Icon" class="me-2" style="width: 20px; height: 20px;" />
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Tasks" asp-action="Main">
+                            <img src="/Resources/task.png" alt="Tasks Icon" class="me-2" style="width: 20px; height: 20px;" />
+                            Tasks
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Settings" asp-action="Main">
+                            <img src="/Resources/settings.png" alt="Settings Icon" class="me-2" style="width: 20px; height: 20px;" />
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
         }
 
+        <!-- Logo -->
+        <div class="navbar-logo d-flex align-items-center">
+            <img src="/Resources/ConjureContent.png" alt="ContentMagican Logo" style="height: 100px;" />
+        </div>
 
+        <!-- Right side: User info -->
+        @if (isAuthenticated)
+        {
+            <div class="d-flex align-items-center ms-auto">
+                <p class="mb-0 me-2">@user.Username</p>
+                <div class="dropdown">
+                    <button class="btn btn-dark dropdown-toggle" type="button" id="accountDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="width: 45px; height: 45px; border-radius: 50%;">
+                        <!-- Optionally, include a user icon or avatar here -->
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+                        <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Account</a></li>
+                        <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        }
     </div>
 
     <!-- Sidebar for larger screens -->
-    <div class="sidebar d-none d-md-flex flex-column flex-shrink-0 bg-light">
-        <div class="logo">
-            <img src="/Resources/ConjureContent.png" alt="ContentMagican Logo" />
+    @if (isAuthenticated)
+    {
+        <div class="sidebar d-none d-md-flex flex-column flex-shrink-0">
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li>
+                    <a asp-controller="Plan" asp-action="Main" class="nav-link page-link">
+                        <img src="/Resources/plan.png" alt="Plan Icon" class="me-2" style="width: 20px; height: 20px;" />
+                        Plan
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Dashboard" asp-action="Main" class="nav-link page-link">
+                        <img src="/Resources/dashboard.png" alt="Dashboard Icon" class="me-2" style="width: 20px; height: 20px;" />
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Tasks" asp-action="Main" class="nav-link page-link">
+                        <img src="/Resources/task.png" alt="Tasks Icon" class="me-2" style="width: 20px; height: 20px;" />
+                        Tasks
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Settings" asp-action="Main" class="nav-link page-link">
+                        <img src="/Resources/settings.png" alt="Settings Icon" class="me-2" style="width: 20px; height: 20px;" />
+                        Settings
+                    </a>
+                </li>
+            </ul>
         </div>
-        <ul class="nav nav-pills flex-column mb-auto">
-            <li>
-                <a asp-controller="Plan" asp-action="Main" class="nav-link page-link">Plan</a>
-            </li>
-            <li>
-                <a asp-controller="Dashboard" asp-action="Main" class="nav-link page-link">Dashboard</a>
-            </li>
-            <li>
-                <a asp-controller="Tasks" asp-action="Main" class="nav-link page-link">Tasks</a>
-            </li>
-            <li>
-                <a asp-controller="Settings" asp-action="Main" class="nav-link page-link">Settings</a>
-            </li>
-        </ul>
-    </div>
+    }
 
+    <!-- Main content -->
     <div class="main-container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <br />
-    <br />
-
+    <!-- Footer -->
     <!-- Footer -->
     <footer class="footer">
-        <p>
-            &copy; 2024 ConjureContent.com. All rights reserved.
-            <a href="@Url.Action("Privacy", "Info")">Privacy Policy</a> |
-            <a href="@Url.Action("Terms", "Info")">Terms of Service</a>
-        </p>
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <!-- Left Side: Company Info -->
+                <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+                    <p class="mb-0">&copy; 2024 ConjureContent.com. All rights reserved.</p>
+                </div>
+                <!-- Right Side: Links -->
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="@Url.Action("Privacy", "Info")" class="text-white me-2">Privacy Policy</a>
+                    <span class="text-white">|</span>
+                    <a href="@Url.Action("Terms", "Info")" class="text-white ms-2">Terms of Service</a>
+                </div>
+            </div>
+        </div>
     </footer>
 
 
