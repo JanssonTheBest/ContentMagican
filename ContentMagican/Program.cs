@@ -1,6 +1,7 @@
 using ContentMagican.Database;
 using ContentMagican.Handlers;
 using ContentMagican.MiddleWare;
+using ContentMagican.Repositories;
 using ContentMagican.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -23,6 +24,8 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<TaskService>();
 builder.Services.AddScoped<FFmpegService>();
+builder.Services.AddScoped<StripeRepository>();
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
