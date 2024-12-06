@@ -48,7 +48,7 @@ namespace ContentMagican.Controllers
             var result = _applicationDbContext.Orders.Where(a => a.SessionId == id).FirstOrDefault();
             if (result == default)
             {
-                return Unauthorized("SHORT DELAY");
+                return Unauthorized($"SHORT DELAY? sessionId tried:{id}");
             }
             var user = await _userService.RetrieveUserInformation(HttpContext);
             if (result.UserId == user.Id)
