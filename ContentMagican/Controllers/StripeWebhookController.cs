@@ -19,6 +19,8 @@ namespace ContentMagican.Controllers
             _userService = userService;
             _stripeRepository = stripeRepository;
         }
+
+        [HttpPost]
         public async Task<IActionResult> Payment(string id)
         {
             var result = _applicationDbContext.Orders.Where(a => a.SessionId == id).FirstOrDefault();
