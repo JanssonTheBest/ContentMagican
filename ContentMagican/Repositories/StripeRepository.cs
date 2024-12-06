@@ -3,9 +3,10 @@ namespace ContentMagican.Repositories
 {
     public class StripeRepository
     {
-
+        IConfigurationSection _config;
         public StripeRepository(IConfiguration configuration)
         {
+            _config = configuration.GetSection("StripeCredentials");
             string apikey = configuration.GetSection("StripeCredentials")["sk"];
             StripeConfiguration.ApiKey = apikey;
         }
@@ -14,6 +15,11 @@ namespace ContentMagican.Repositories
         {
             PaymentIntent paymentIntent = new PaymentIntent();
             //paymentIntent.
+        }
+
+        public async Task<string> GetCheckoutWebhookSecret()
+        {
+            return _config["checkoutws"];
         }
 
         public async Task<List<Product>> GetAllProducts()

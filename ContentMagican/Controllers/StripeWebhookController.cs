@@ -25,6 +25,26 @@ namespace ContentMagican.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Payment(string id)
         {
+
+            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+            var stripeSignature = Request.Headers["Stripe-Signature"];
+
+            Event stripeEvent;
+          
+
+            try
+            {
+                string secret = await _stripeRepository.GetCheckoutWebhookSecret();
+                stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, secret);
+            }
+            catch (StripeException e)
+            {
+                // Invalid signature
+                return BadRequest();
+            }
+
+
+
             var result = _applicationDbContext.Orders.Where(a => a.SessionId == id).FirstOrDefault();
             if (result == default)
             {
