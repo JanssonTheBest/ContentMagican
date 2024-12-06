@@ -23,9 +23,9 @@ namespace ContentMagican.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Payment(string id)
+        public async Task<IActionResult> Payment()
         {
-
+            string id;
             var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
             var stripeSignature = Request.Headers["Stripe-Signature"];
 
@@ -36,6 +36,7 @@ namespace ContentMagican.Controllers
             {
                 string secret = await _stripeRepository.GetCheckoutWebhookSecret();
                 stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, secret);
+                id = stripeEvent.Id;
             }
             catch (StripeException e)
             {
