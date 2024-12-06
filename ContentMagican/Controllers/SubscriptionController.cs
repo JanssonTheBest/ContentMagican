@@ -17,9 +17,9 @@ namespace ContentMagican.Controllers
         {
             string url = await _stripeService.StripeSession(userId,subscriptionId, Url.Action("Main", "Dashboard", null, Request.Scheme));
 
-#if (DEBUG)
-            return RedirectToAction("Payment","StripeWebhook",new {id = "cs_test_a1tRwkSzrhQuNgntHSScFkFSzDb93FXpXD1YTEW5NK43hngtWoSVDMCEfQ" });
-#endif
+//#if (DEBUG)
+//            return RedirectToAction("Payment","StripeWebhook",new {id = "cs_test_a1tRwkSzrhQuNgntHSScFkFSzDb93FXpXD1YTEW5NK43hngtWoSVDMCEfQ" });
+//#endif
 
             return Redirect(url);
         }

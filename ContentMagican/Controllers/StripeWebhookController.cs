@@ -57,7 +57,7 @@ namespace ContentMagican.Controllers
                 userchange.PlanId = result.ProductId;
                 var sessionService = new SessionService();
                 var session = await sessionService.GetAsync(id);
-                userchange.CustomerId = session.CustomerId;
+                userchange.CustomerId = session.CustomerId ?? "error";
                 result.Status = "success";
                 await _applicationDbContext.SaveChangesAsync();
                 return Ok();
