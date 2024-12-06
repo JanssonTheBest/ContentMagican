@@ -1,4 +1,6 @@
 ﻿@using ContentMagican.Repositories
+@using ContentMagican.Services
+@inject UserService userService;
 @inject StripeRepository stripeRepository;
 
 <div class="container mt-4">
@@ -21,7 +23,7 @@
             </div>
         </div>
 
-        @foreach (var product in await stripeRepository.GetAllProducts(Context))
+        @foreach (var product in await stripeRepository.GetAllProducts())
         {
             <div class="col-12 col-md-6 col-lg-4 mb-4">
                 <div class="card h-100 text-center p-3">
@@ -30,11 +32,11 @@
                     <p>Active task limit: 1</p>
                     <p>Resource priority: Low</p>
                     <div class="d-flex justify-content-center align-items-center" style="min-height:100px;">
-                        <a href="@product.Url" class="btn btn-outline-primary w-75 mt-3">Get Started</a>
+                        <a href="@Url.Action("Subscribe","Subscription", new{userId = (await userService.RetrieveUserInformation(Context)).Id,subscriptionId = product.Id})" class="btn btn-outline-primary w-75 mt-3">Get Started</a>
                     </div>
                 </div>
             </div>
         }
-      
+
     </div>
 </div>

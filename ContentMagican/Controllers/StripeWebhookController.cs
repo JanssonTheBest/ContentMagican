@@ -1,12 +1,44 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ContentMagican.Database;
+using ContentMagican.Repositories;
+using ContentMagican.Services;
+using Microsoft.AspNetCore.Mvc;
+using Stripe;
+using Stripe.Checkout;
 
 namespace ContentMagican.Controllers
 {
     public class StripeWebhookController : Controller
     {
-        public IActionResult Payment(long client_reference_id)
+        ApplicationDbContext _applicationDbContext;
+        UserService _userService;
+        StripeRepository _stripeRepository;
+        public StripeWebhookController(ApplicationDbContext applicationDbContext, UserService userService, StripeRepository stripeRepository)
         {
-            return View();
+            _applicationDbContext = applicationDbContext;
+            _userService = userService;
+            _stripeRepository = stripeRepository;
+        }
+        public async Task<IActionResult> Payment(string id)
+        {
+            var result = _applicationDbContext.Orders.Where(a => a.SessionId == id).FirstOrDefault();
+            if (result == default)
+            {
+                return RedirectToAction("Main", "Plan");
+            }
+            var user = await _userService.RetrieveUserInformation(HttpContext);
+            if (result.UserId == user.Id)
+            {
+                var userchange = _applicationDbContext.Users.Where(a => a.Id == user.Id).FirstOrDefault();
+                userchange.PlanId = result.ProductId;
+                var sessionService = new SessionService();
+                var session = await sessionService.GetAsync(id);
+                userchange.CustomerId = session.CustomerId;
+                result.Status = "success";
+                await _applicationDbContext.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Main", "Plan");
+
         }
     }
 }

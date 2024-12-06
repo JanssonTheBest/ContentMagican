@@ -12,10 +12,11 @@ namespace ContentMagican.Database
 
         }
 
-        public DbSet<Plan> Plans { get; set; }
+        //public DbSet<Plan> Plans { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<_Task> Task { get; set; }
         public DbSet<VideoAutomation> VideoAutomation { get; set; }
+        public DbSet<OrderLog> Orders { get; set; }
     }
 
 }

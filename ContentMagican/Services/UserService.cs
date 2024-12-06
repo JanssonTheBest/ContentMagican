@@ -63,7 +63,6 @@ namespace ContentMagican.Services
                 Email = registerModel.Email,
                 Username = registerModel.Username,
                 Password = registerModel.Password,
-                PlanId = 1,
             });
 
             await _applicationDbContext.SaveChangesAsync();

@@ -8,6 +8,7 @@ namespace ContentMagican.Database
         public string Username { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-        public int? PlanId { get; set; }
+        public string PlanId { get; set; } = "1";
+        public string? CustomerId { get; set; }
     }
 }

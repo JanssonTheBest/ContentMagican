@@ -25,6 +25,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<TaskService>();
 builder.Services.AddScoped<FFmpegService>();
 builder.Services.AddScoped<StripeRepository>();
+builder.Services.AddScoped<StripeService>();
 
 
 // Add services to the container.
