@@ -36,7 +36,8 @@ namespace ContentMagican.Controllers
             {
                 string secret = await _stripeRepository.GetCheckoutWebhookSecret();
                 stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, secret);
-                id = stripeEvent.Id;
+                id = (stripeEvent.Data.Object as Stripe.Checkout.Session).Id;
+                
             }
             catch (StripeException e)
             {
