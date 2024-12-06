@@ -1,6 +1,7 @@
 ﻿using ContentMagican.Database;
 using ContentMagican.Repositories;
 using ContentMagican.Services;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
 using Stripe.Checkout;
@@ -23,7 +24,7 @@ namespace ContentMagican.Controllers
             var result = _applicationDbContext.Orders.Where(a => a.SessionId == id).FirstOrDefault();
             if (result == default)
             {
-                return RedirectToAction("Main", "Plan");
+                return Unauthorized();
             }
             var user = await _userService.RetrieveUserInformation(HttpContext);
             if (result.UserId == user.Id)
@@ -35,10 +36,9 @@ namespace ContentMagican.Controllers
                 userchange.CustomerId = session.CustomerId;
                 result.Status = "success";
                 await _applicationDbContext.SaveChangesAsync();
+                return Ok();
             }
-
-            return RedirectToAction("Main", "Plan");
-
+            return Unauthorized();
         }
     }
 }
