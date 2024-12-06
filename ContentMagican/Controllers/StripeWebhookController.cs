@@ -1,6 +1,7 @@
 ﻿using ContentMagican.Database;
 using ContentMagican.Repositories;
 using ContentMagican.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
@@ -21,6 +22,7 @@ namespace ContentMagican.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Payment(string id)
         {
             var result = _applicationDbContext.Orders.Where(a => a.SessionId == id).FirstOrDefault();
