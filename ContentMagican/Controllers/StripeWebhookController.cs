@@ -48,7 +48,7 @@ namespace ContentMagican.Controllers
             var result = _applicationDbContext.Orders.Where(a => a.SessionId == id).FirstOrDefault();
             if (result == default)
             {
-                return Unauthorized();
+                return Unauthorized("SHORT DELAY");
             }
             var user = await _userService.RetrieveUserInformation(HttpContext);
             if (result.UserId == user.Id)
@@ -62,7 +62,7 @@ namespace ContentMagican.Controllers
                 await _applicationDbContext.SaveChangesAsync();
                 return Ok();
             }
-            return Unauthorized();
+            return Unauthorized("WTF");
         }
     }
 }
