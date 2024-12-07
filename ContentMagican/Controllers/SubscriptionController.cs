@@ -20,7 +20,7 @@ namespace ContentMagican.Controllers
         [HttpGet]
         public  async Task<IActionResult> Subscribe(long userId, string subscriptionId)
         {
-            await _stripeRepository.GetCustomerByEmailAsync((await _userService.RetrieveUserInformation(HttpContext)).Email);
+            //await _stripeRepository.GetCustomerByEmailAsync((await _userService.RetrieveUserInformation(HttpContext)).Email);
             string url = await _stripeService.StripeSession(userId,subscriptionId, Url.Action("Main", "Dashboard", null, Request.Scheme),HttpContext);
 
 //#if (DEBUG)
