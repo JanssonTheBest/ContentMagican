@@ -24,8 +24,7 @@ namespace ContentMagican.Services
 
             var userInfo = await _userService.RetrieveUserInformation(ctx);
 
-            // Retrieve the user from your database to access StripeCustomerId
-            var user = await _applicationDbContext.Users.FindAsync(userId);
+            var user = await _applicationDbContext.Users.FindAsync((int)userId);
             if (user == null)
             {
                 throw new ArgumentException("User not found.");
