@@ -25,14 +25,20 @@ namespace ContentMagican.Services
             {
                 CancelUrl = ridirectUrl,
                 SuccessUrl = ridirectUrl,
-                CustomerEmail = (await _userService.RetrieveUserInformation(ctx)).Email, // Stripe handles customer creation/retrieval
+                CustomerEmail = (await _userService.RetrieveUserInformation(ctx)).Email,
+                Metadata = new Dictionary<string, string>
+            {
+                { "CustomerId", (await _userService.RetrieveUserInformation(ctx)).Id.ToString() },
+                { "ProductId", productId },
+            },
+
                 LineItems = new List<Stripe.Checkout.SessionLineItemOptions>
-                
+
     {
         new Stripe.Checkout.SessionLineItemOptions
         {
             Price = product.DefaultPriceId,
-            Quantity = 1, 
+            Quantity = 1,
         },
     },
                 Mode = "payment",
@@ -47,6 +53,10 @@ namespace ContentMagican.Services
                 ProductId = productId
             });
             await _applicationDbContext.SaveChangesAsync();
+
+
+            var customerService = new CustomerService();
+
             return session.Url;
         }
     }

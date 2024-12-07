@@ -25,46 +25,42 @@ namespace ContentMagican.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Payment()
         {
-            string id;
             var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
             var stripeSignature = Request.Headers["Stripe-Signature"];
 
             Event stripeEvent;
-          
+
+            Session checkoutSession;
 
             try
             {
                 string secret = await _stripeRepository.GetCheckoutWebhookSecret();
                 stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, secret);
-                id = (stripeEvent.Data.Object as Stripe.Checkout.Session).Id;
-                
+                checkoutSession = stripeEvent.Data.Object as Stripe.Checkout.Session;
             }
             catch (StripeException e)
             {
-                // Invalid signature
                 return BadRequest();
             }
 
+            var result = _applicationDbContext.Users.Where(a => a.Id == Convert.ToInt32(checkoutSession.Metadata["CustomerId"])).FirstOrDefault();
 
-
-            var result = _applicationDbContext.Orders.Where(a => a.SessionId == id).FirstOrDefault();
             if (result == default)
             {
-                return Unauthorized($"SHORT DELAY? sessionId tried:{id}");
+                return Unauthorized("User not found");
             }
-            var user = await _userService.RetrieveUserInformation(HttpContext);
-            if (result.UserId == user.Id)
+
+            try
             {
-                var userchange = _applicationDbContext.Users.Where(a => a.Id == user.Id).FirstOrDefault();
-                userchange.PlanId = result.ProductId;
-                var sessionService = new SessionService();
-                var session = await sessionService.GetAsync(id);
-                userchange.CustomerId = session.CustomerId ?? "error";
-                result.Status = "success";
+                result.PlanId = checkoutSession.Metadata["ProductId"];
                 await _applicationDbContext.SaveChangesAsync();
-                return Ok();
             }
-            return Unauthorized("WTF");
+            catch
+            {
+                return BadRequest("Failed saving");
+            }
+
+            return Ok(result);
         }
     }
 }
