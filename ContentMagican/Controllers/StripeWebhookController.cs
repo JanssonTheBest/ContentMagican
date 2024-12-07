@@ -4,6 +4,7 @@ using ContentMagican.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Stripe;
 using Stripe.Checkout;
 using System.Linq.Expressions;
@@ -56,28 +57,77 @@ namespace ContentMagican.Controllers
 
         public async Task<IActionResult> HandleCheckout(Event stripeEvent)
         {
+            
             Session checkoutSession = stripeEvent.Data.Object as Stripe.Checkout.Session;
 
-            if(checkoutSession.PaymentStatus != "paid")
+
+            if (checkoutSession == null)
             {
-                return Ok("Not Paid");
+                return BadRequest("Invalid session data.");
+            }
+            if (checkoutSession.PaymentStatus != "paid")
+            {
+                return Ok("Payment not completed.");
+            }
+            var user = await _applicationDbContext.Users
+                .FirstOrDefaultAsync(u => u.CustomerId == checkoutSession.CustomerId);
+
+            if (user == null)
+            {
+                return BadRequest("User not found.");
             }
 
-            var result = _applicationDbContext.Users.Where(a => a.CustomerId == checkoutSession.CustomerId).FirstOrDefault();            //var result = _applicationDbContext.Users.Where(a => a.Id == Convert.ToInt32(checkoutSession.Metadata["UserId"])).FirstOrDefault();
-
-            if (result == default)
-            {
-                return BadRequest("User not found");
-            }
             try
             {
-                await _applicationDbContext.SaveChangesAsync();
+                var paymentIntentService = new PaymentIntentService();
+                var paymentMethodService = new PaymentMethodService();
+                var customerService = new CustomerService();
+                string paymentIntentId = checkoutSession.PaymentIntentId;
+
+                if (string.IsNullOrEmpty(paymentIntentId))
+                {
+                    return BadRequest("PaymentIntentId is missing from the session.");
+                }
+                PaymentIntent paymentIntent = await paymentIntentService.GetAsync(paymentIntentId);
+
+                if (paymentIntent == null)
+                {
+                    return BadRequest("PaymentIntent not found.");
+                }
+
+                string paymentMethodId = paymentIntent.PaymentMethodId;
+
+                if (string.IsNullOrEmpty(paymentMethodId))
+                {
+                    return BadRequest("PaymentMethodId is missing from the PaymentIntent.");
+                }
+
+                var attachOptions = new PaymentMethodAttachOptions
+                {
+                    Customer = user.CustomerId,
+                };
+                await paymentMethodService.AttachAsync(paymentMethodId, attachOptions);
+
+                var customerUpdateOptions = new CustomerUpdateOptions
+                {
+                    InvoiceSettings = new CustomerInvoiceSettingsOptions
+                    {
+                        DefaultPaymentMethod = paymentMethodId
+                    }
+                };
+                await customerService.UpdateAsync(user.CustomerId, customerUpdateOptions);
             }
-            catch(Exception ex)
+            catch (StripeException ex)
             {
-                return BadRequest($"Failed saving ex:{ex.Message}\nCustomer:{result}");
+                Console.WriteLine($"Stripe error: {ex.Message}");
+                return BadRequest($"Stripe error: {ex.Message}");
             }
-            return Ok(result + checkoutSession.CustomerId);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                return BadRequest($"Error: {ex.Message}");
+            }
+            return Ok($"Payment successful. Default payment method updated for customer {checkoutSession.CustomerId}.");
         }
 
 

@@ -38,10 +38,6 @@ namespace ContentMagican.Services
                 var customerOptions = new Stripe.CustomerCreateOptions
                 {
                     Email = userInfo.Email,
-                    Metadata = new Dictionary<string, string>
-            {
-                { "UserId", userInfo.Id.ToString() }
-            }
                 };
 
                 var customerService = new Stripe.CustomerService();
