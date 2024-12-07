@@ -19,12 +19,12 @@ namespace ContentMagican.Services
         }
 
 
-        public async Task<Subscription> GetRelevantSubscriptionFromCustomer(string id)
-        {
-            CustomerService customerService = new CustomerService();
-            var customer = await customerService.GetAsync(id);
-            customer.Subscriptions
-        }
+        //public async Task<Subscription> GetRelevantSubscriptionFromCustomer(string id)
+        //{
+        //    CustomerService customerService = new CustomerService();
+        //    var customer = await customerService.GetAsync(id);
+        //    customer.Subscriptions
+        //}
 
         public async Task<string> StripeSession(long userId, string productId, string redirectUrl, HttpContext ctx)
         {
