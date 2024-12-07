@@ -73,7 +73,7 @@ namespace ContentMagican.Controllers
             try
             {
                 result.PlanId = checkoutSession.Metadata["ProductId"];
-                result.CustomerId = (await _stripeRepository.GetCustomer(result.Email)).Id;
+                result.CustomerId = (await _stripeRepository.GetCustomerByEmailAsync(result.Email)).Id;
                 await _applicationDbContext.SaveChangesAsync();
             }
             catch(Exception ex)
