@@ -19,12 +19,44 @@ namespace ContentMagican.Services
         }
 
 
-        //public async Task<Subscription> GetRelevantSubscriptionFromCustomer(string id)
-        //{
-        //    CustomerService customerService = new CustomerService();
-        //    var customer = await customerService.GetAsync(id);
-        //    customer.Subscriptions
-        //}
+        public async Task<Product> GetRelevantProductFromUser(long id, HttpContext ctx)
+        {
+            CustomerService customerService = new CustomerService();
+            var user = await _userService.RetrieveUserInformation(ctx);
+            var customer = await customerService.GetAsync(user.CustomerId);
+            var subscriptionService = new SubscriptionService();
+            var productService = new ProductService();
+
+            // Retrieve all active subscriptions for the customer
+            var activeSubscriptions = await subscriptionService.ListAsync(new SubscriptionListOptions
+            {
+                Customer = customer.Id,
+                Status = "active",
+            });
+
+            var subscription = activeSubscriptions.FirstOrDefault();
+
+            if (subscription == default)
+            {
+                return new Product
+                {
+                    Name = "free tier",
+                };
+            }
+
+            var subscriptionItem = subscription.Items.Data.FirstOrDefault();
+            if (subscriptionItem != null)
+            {
+                var product = await productService.GetAsync(subscriptionItem.Price.ProductId);
+                return product;
+            }
+
+            return new Product
+            {
+                Name = "Free Tier",
+            };
+        }
+
 
         public async Task<string> StripeSession(long userId, string productId, string redirectUrl, HttpContext ctx)
         {
@@ -68,7 +100,7 @@ namespace ContentMagican.Services
             {
                 CancelUrl = redirectUrl,
                 SuccessUrl = redirectUrl,
-                Customer = stripeCustomerId, 
+                Customer = stripeCustomerId,
                 Metadata = new Dictionary<string, string>
         {
             { "UserId", userInfo.Id.ToString() },

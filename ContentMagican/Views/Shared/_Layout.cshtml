@@ -1,6 +1,7 @@
 ﻿@using ContentMagican.Services;
 @using ContentMagican.Database;
 @inject UserService userService;
+@inject StripeService stripeService;
 
 @{
     var isAuthenticated = false;
@@ -19,7 +20,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Head content remains the same -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ConjureContent</title>
@@ -29,21 +29,19 @@
     <link rel="icon" type="image/x-icon" href="~/favicon1.ico">
 
     <style>
-        /* Hide the dropdown arrow */
         .dropdown-toggle::after {
             display: none;
         }
 
-        /* Sidebar styling */
         .sidebar {
             width: 150px;
             min-width: 150px;
-            height: calc(100vh - 70px); /* Adjusted for navbar height */
+            height: calc(100vh - 70px);
             position: fixed;
-            top: 70px; /* Adjusted for navbar height */
+            top: 70px;
             left: 0;
             z-index: 1050;
-            background: rgba(248, 249, 250); /* Semi-transparent background */
+            background: rgba(248, 249, 250);
             padding: 0;
             display: flex;
             flex-direction: column;
@@ -55,9 +53,8 @@
             color: #333;
         }
 
-        /* Top navbar */
         .top-navbar {
-            height: 70px; /* Adjusted to fit the logo */
+            height: 70px;
             display: flex;
             align-items: center;
             padding: 0 20px;
@@ -66,42 +63,42 @@
             left: 0;
             right: 0;
             z-index: 2000;
-            background: rgba(255, 255, 255); /* Semi-transparent background */
+            background: rgba(255, 255, 255);
             border-bottom: 1px solid #ccc;
-            position: relative; /* Added for positioning child elements */
         }
 
-        /* Main container styling */
         .main-container {
-            margin-left: 150px; /* Width of the sidebar */
+            margin-left: 150px;
             padding: 20px;
-            margin-top: 70px; /* Height of the navbar */
+            margin-top: 70px;
             position: relative;
-            z-index: 1; /* Ensure it appears above the background */
+            z-index: 1;
         }
 
-        /* Responsive adjustments */
         @@media (max-width: 800px) {
+            .sidebar-toggler {
+                display: block;
+                position: absolute;
+                left: 20px;
+                top: 15px;
+                z-index: 2001;
+            }
+
             .sidebar {
-                display: none;
+                position: fixed;
+                top: 70px;
+                left: -150px;
+                transition: left 0.3s ease;
+                z-index: 1050;
+            }
+
+            .sidebar.show {
+                left: 0;
             }
 
             .main-container {
                 margin-left: 0;
                 width: 100%;
-            }
-
-            .menu-dropdown {
-                display: block;
-                position: absolute;
-                left: 20px;
-                top: 15px;
-                z-index: 2001; /* Ensure it appears above the background */
-            }
-
-            /* Center the logo on small screens */
-            .top-navbar {
-                position: relative;
             }
 
             .top-navbar .navbar-logo {
@@ -110,7 +107,6 @@
                 transform: translateX(-50%);
             }
 
-            /* Position user info on the right */
             .top-navbar .ms-auto {
                 position: absolute;
                 right: 20px;
@@ -119,66 +115,38 @@
             }
         }
 
-        /* Footer styling */
-        /* Footer styling */
         .footer {
-            background: rgba(33, 37, 41); /* Semi-transparent background */
+            background: rgba(33, 37, 41);
             color: white;
             padding: 10px 0;
             width: 100%;
             z-index: 2000;
             position: relative;
         }
-
-
-
-        /* Set the GIF as the background image */
-        body {
-            background-image: url('');
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center center;
-            background-attachment: fixed;
-        }
     </style>
 </head>
 <body>
-    <!-- Top navbar -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebarToggler = document.getElementById('sidebarToggler');
+            const sidebar = document.querySelector('.sidebar');
+
+            if (sidebarToggler && sidebar) {
+                sidebarToggler.addEventListener('click', () => {
+                    sidebar.classList.toggle('show');
+                });
+            }
+        });
+    </script>
+
+    <!-- Top Navbar -->
     <div class="top-navbar">
         @if (isAuthenticated)
         {
-            <!-- Menu dropdown for mobile screens -->
-            <div class="menu-dropdown dropdown d-md-none me-3">
-                <button class="btn btn-transparent dropdown-toggle" type="button" id="menuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="/Resources/menu.png" alt="Menu Icon" class="me-2" style="width: 40px; height: 40px;" />
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="menuDropdown">
-                    <li>
-                        <a class="dropdown-item" asp-controller="Plan" asp-action="Main">
-                            <img src="/Resources/plan.png" alt="Plan Icon" class="me-2" style="width: 20px; height: 20px;" />
-                            Plan
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" asp-controller="Dashboard" asp-action="Main">
-                            <img src="/Resources/dashboard.png" alt="Dashboard Icon" class="me-2" style="width: 20px; height: 20px;" />
-                            Dashboard
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" asp-controller="Tasks" asp-action="Main">
-                            <img src="/Resources/task.png" alt="Tasks Icon" class="me-2" style="width: 20px; height: 20px;" />
-                            Tasks
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" asp-controller="Settings" asp-action="Main">
-                            <img src="/Resources/settings.png" alt="Settings Icon" class="me-2" style="width: 20px; height: 20px;" />
-                            Settings
-                        </a>
-                    </li>
-                </ul>
-            </div>
+            <!-- Sidebar Toggler for Mobile -->
+            <button id="sidebarToggler" class="btn btn-transparent sidebar-toggler d-md-none">
+                <img src="/Resources/menu.png" alt="Menu Icon" style="width: 40px; height: 40px;" />
+            </button>
         }
 
         <!-- Logo -->
@@ -186,16 +154,27 @@
             <img src="/Resources/ConjureContent.png" alt="ContentMagican Logo" style="height: 100px;" />
         </div>
 
-        <!-- Right side: User info -->
+        <!-- Right side: User Info -->
         @if (isAuthenticated)
         {
-            <div class="d-flex align-items-center ms-auto">
-                <p class="mb-0 me-2">@user.Username</p>
-                <div class="dropdown">
-                    <button class="btn btn-dark dropdown-toggle" type="button" id="accountDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="width: 45px; height: 45px; border-radius: 50%;">
-                        <!-- Optionally, include a user icon or avatar here -->
+            <div class="d-flex align-items-center justify-content-end ms-auto">
+                <!-- Notification Bell -->
+                <div class="dropdown me-3">
+                    <button class="btn btn-transparent dropdown-toggle p-0" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border: none; background: none;">
+                        <img src="/Resources/bell.png" alt="Notifications" style="width: 24px; height: 24px;" />
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown" style="max-height: 300px; overflow-y: auto; width: 300px; z-index: 1050;">
+                        <li class="dropdown-item text-muted">No new messages</li>
+                    </ul>
+                </div>
+
+                <!-- Subscription Badge -->
+                <span class="badge bg-primary me-3">@((await stripeService.GetRelevantProductFromUser(user.Id, Context)).Name)</span>
+
+                <!-- Profile Dropdown -->
+                <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="accountDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="width: 40px; height: 40px; border-radius: 50%; background-image: url('/Resources/profile.png'); background-size: cover; background-position: center; border: none;"></button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown" style="z-index: 1050;">
                         <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Account</a></li>
                         <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">Logout</a></li>
                     </ul>
@@ -204,10 +183,10 @@
         }
     </div>
 
-    <!-- Sidebar for larger screens -->
+    <!-- Sidebar -->
     @if (isAuthenticated)
     {
-        <div class="sidebar d-none d-md-flex flex-column flex-shrink-0">
+        <div class="sidebar d-md-flex flex-column flex-shrink-0">
             <ul class="nav nav-pills flex-column mb-auto">
                 <li>
                     <a asp-controller="Plan" asp-action="Main" class="nav-link page-link">
@@ -237,7 +216,7 @@
         </div>
     }
 
-    <!-- Main content -->
+    <!-- Main Content -->
     <div class="main-container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -245,15 +224,12 @@
     </div>
 
     <!-- Footer -->
-    <!-- Footer -->
     <footer class="footer">
         <div class="container-fluid">
             <div class="row align-items-center">
-                <!-- Left Side: Company Info -->
                 <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
                     <p class="mb-0">&copy; 2024 ConjureContent.com. All rights reserved.</p>
                 </div>
-                <!-- Right Side: Links -->
                 <div class="col-md-6 text-center text-md-end">
                     <a href="@Url.Action("Privacy", "Info")" class="text-white me-2">Privacy Policy</a>
                     <span class="text-white">|</span>
@@ -262,7 +238,6 @@
             </div>
         </div>
     </footer>
-
 
     @await RenderSectionAsync("Scripts", required: false)
 
