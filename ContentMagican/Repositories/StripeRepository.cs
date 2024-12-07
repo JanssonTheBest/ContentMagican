@@ -29,5 +29,12 @@ namespace ContentMagican.Repositories
             return list;
         }
 
+        public async Task<Customer> GetCustomer(string id)
+        {
+            CustomerService customerService = new CustomerService();
+            return await customerService.GetAsync(id);
+
+        }
+
     }
 }

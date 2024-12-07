@@ -46,8 +46,7 @@ namespace ContentMagican.Controllers
                 case EventTypes.CheckoutSessionCompleted:
                     return await HandleCheckout(stripeEvent);
                 case EventTypes.CustomerSubscriptionDeleted:
-
-                    break;
+                    return await HandleCustomerSubscriptionDeleted(stripeEvent);
             }
 
             return BadRequest("Didnt match");
@@ -74,20 +73,42 @@ namespace ContentMagican.Controllers
             try
             {
                 result.PlanId = checkoutSession.Metadata["ProductId"];
+                result.CustomerId = (await _stripeRepository.GetCustomer(result.Email)).Id;
                 await _applicationDbContext.SaveChangesAsync();
             }
             catch
             {
                 return BadRequest("Failed saving");
             }
-
             return Ok(result);
         }
 
 
-        public async Task<IActionResult> HandleCustomerSubscriptionDeleted(Event stripeEvent)
+        private async Task<IActionResult> HandleCustomerSubscriptionDeleted(Event stripeEvent)
         {
-            return Ok();
+            var subscription = stripeEvent.Data.Object as Subscription;
+            if (subscription == null)
+            {
+                return BadRequest("could not cast object");
+            }
+
+            
+            var customer = await _stripeRepository.GetCustomer(subscription.CustomerId);
+            if (customer == null)
+            {
+                return BadRequest("Customer Not Found");
+            }
+
+            var user = _applicationDbContext.Users.FirstOrDefault(u => u.Email == customer.Email);
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            user.PlanId = "free"; 
+            await _applicationDbContext.SaveChangesAsync();
+            return Ok(user);
         }
+
     }
 }
