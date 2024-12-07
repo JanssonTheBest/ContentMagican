@@ -43,7 +43,7 @@ namespace ContentMagican.Controllers
                 return BadRequest();
             }
 
-            var result = _applicationDbContext.Users.Where(a => a.Id == Convert.ToInt32(checkoutSession.Metadata["CustomerId"])).FirstOrDefault();
+            var result = _applicationDbContext.Users.Where(a => a.Id == Convert.ToInt32(checkoutSession.Metadata["UserId"])).FirstOrDefault();
 
             if (result == default)
             {

@@ -28,7 +28,7 @@ namespace ContentMagican.Services
                 CustomerEmail = (await _userService.RetrieveUserInformation(ctx)).Email,
                 Metadata = new Dictionary<string, string>
             {
-                { "CustomerId", (await _userService.RetrieveUserInformation(ctx)).Id.ToString() },
+                { "UserId", (await _userService.RetrieveUserInformation(ctx)).Id.ToString() },
                 { "ProductId", productId },
             },
 
