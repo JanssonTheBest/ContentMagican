@@ -79,56 +79,33 @@ namespace ContentMagican.Controllers
             {
                 var subscriptionService = new SubscriptionService();
                 var customerService = new CustomerService();
-                var paymentIntentService = new PaymentIntentService();
                 var paymentMethodService = new PaymentMethodService();
 
-                string paymentIntentId = checkoutSession.PaymentIntentId;
-                if (string.IsNullOrEmpty(paymentIntentId))
+                // Fetch payment methods for the customer dynamically (no type filtering)
+                var paymentMethods = await paymentMethodService.ListAsync(new PaymentMethodListOptions
                 {
-                    return BadRequest("PaymentIntentId is missing from the session.");
+                    Customer = user.CustomerId,
+                });
+
+                if (paymentMethods.Data.Count == 0)
+                {
+                    return BadRequest("No payment methods available for the customer.");
                 }
 
-                PaymentIntent paymentIntent = await paymentIntentService.GetAsync(paymentIntentId);
-                if (paymentIntent == null)
-                {
-                    return BadRequest("PaymentIntent not found.");
-                }
-
-                string paymentMethodId = paymentIntent.PaymentMethodId;
-                if (string.IsNullOrEmpty(paymentMethodId))
-                {
-                    return BadRequest("PaymentMethodId is missing from the PaymentIntent.");
-                }
-
-                // Attach payment method to customer if not already attached
-                try
-                {
-                    var attachOptions = new PaymentMethodAttachOptions
-                    {
-                        Customer = user.CustomerId,
-                    };
-                    await paymentMethodService.AttachAsync(paymentMethodId, attachOptions);
-                }
-                catch (StripeException ex)
-                {
-                    if (ex.Message.Contains("already been attached to another customer"))
-                    {
-                        return BadRequest("Payment method is already attached to another customer.");
-                    }
-                    throw; // Re-throw if the error is not about already being attached
-                }
+                // Select the first available payment method
+                var selectedPaymentMethod = paymentMethods.Data[0]; // Use your own logic if needed
 
                 // Update customer's default payment method
                 var customerUpdateOptions = new CustomerUpdateOptions
                 {
                     InvoiceSettings = new CustomerInvoiceSettingsOptions
                     {
-                        DefaultPaymentMethod = paymentMethodId
+                        DefaultPaymentMethod = selectedPaymentMethod.Id
                     }
                 };
                 await customerService.UpdateAsync(user.CustomerId, customerUpdateOptions);
 
-                // Check for existing subscription
+                // Check for existing subscriptions
                 var existingSubscriptions = await subscriptionService.ListAsync(new SubscriptionListOptions
                 {
                     Customer = user.CustomerId,
@@ -142,8 +119,8 @@ namespace ContentMagican.Controllers
                     // Cancel the existing subscription
                     await subscriptionService.CancelAsync(existingSubscription.Id, new SubscriptionCancelOptions
                     {
-                        InvoiceNow = true, // Optionally finalize any outstanding invoices
-                        Prorate = true     // Optionally prorate the cancellation
+                        InvoiceNow = true, // Finalize any outstanding invoices
+                        Prorate = true     // Prorate the cancellation if applicable
                     });
                 }
 
@@ -155,10 +132,10 @@ namespace ContentMagican.Controllers
             {
                 new SubscriptionItemOptions
                 {
-                    Price = checkoutSession.LineItems.Data[0].Price.Id, // Assuming you use the first price from the session
+                    Price = checkoutSession.LineItems.Data[0].Price.Id, // Assuming the first line item contains the price ID
                 }
             },
-                    DefaultPaymentMethod = paymentMethodId,
+                    DefaultPaymentMethod = selectedPaymentMethod.Id,
                 };
                 var newSubscription = await subscriptionService.CreateAsync(subscriptionCreateOptions);
 
@@ -175,6 +152,7 @@ namespace ContentMagican.Controllers
                 return BadRequest($"Error: {ex.Message}");
             }
         }
+
 
 
 
