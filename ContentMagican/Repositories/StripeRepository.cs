@@ -42,22 +42,21 @@ namespace ContentMagican.Repositories
             {
                 throw new ArgumentException("Email must be provided.", nameof(email));
             }
-            CustomerService _customerService = new CustomerService();
+
+            var customerService = new CustomerService();
             try
             {
-                var searchOptions = new CustomerSearchOptions
+                var listOptions = new CustomerListOptions
                 {
-                    Query = $"email:'{email}'",
+                    Email = email,
                     Limit = 1,
                 };
 
-                var searchResult = await _customerService.SearchAsync(searchOptions);
-
-                return searchResult.Data.FirstOrDefault();
+                var customers = await customerService.ListAsync(listOptions);
+                return customers.Data.FirstOrDefault();
             }
             catch (StripeException ex)
             {
-                
                 Console.WriteLine($"Stripe Error: {ex.Message}");
                 throw;
             }
@@ -67,6 +66,7 @@ namespace ContentMagican.Repositories
                 throw;
             }
         }
+
 
     }
 }

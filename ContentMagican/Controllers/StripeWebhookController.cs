@@ -63,24 +63,21 @@ namespace ContentMagican.Controllers
                 return Ok("Not Paid");
             }
 
-            var result = _applicationDbContext.Users.Where(a => a.Id == Convert.ToInt32(checkoutSession.Metadata["UserId"])).FirstOrDefault();
+            var result = _applicationDbContext.Users.Where(a => a.CustomerId == checkoutSession.CustomerId).FirstOrDefault();            //var result = _applicationDbContext.Users.Where(a => a.Id == Convert.ToInt32(checkoutSession.Metadata["UserId"])).FirstOrDefault();
 
             if (result == default)
             {
                 return BadRequest("User not found");
             }
-            var customer = await _stripeRepository.GetCustomerByEmailAsync(result.Email);
             try
             {
-                result.PlanId = checkoutSession.Metadata["ProductId"];
-                result.CustomerId = customer.Id;
                 await _applicationDbContext.SaveChangesAsync();
             }
             catch(Exception ex)
             {
-                return BadRequest($"Failed saving ex:{ex.Message}\nCustomer:{customer}");
+                return BadRequest($"Failed saving ex:{ex.Message}\nCustomer:{result}");
             }
-            return Ok(result);
+            return Ok(result + checkoutSession.CustomerId);
         }
 
 
