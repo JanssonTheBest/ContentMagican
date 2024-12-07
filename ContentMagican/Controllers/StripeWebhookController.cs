@@ -69,16 +69,16 @@ namespace ContentMagican.Controllers
             {
                 return BadRequest("User not found");
             }
-
+            var customer = await _stripeRepository.GetCustomerByEmailAsync(result.Email);
             try
             {
                 result.PlanId = checkoutSession.Metadata["ProductId"];
-                result.CustomerId = (await _stripeRepository.GetCustomerByEmailAsync(result.Email)).Id;
+                result.CustomerId = customer.Id;
                 await _applicationDbContext.SaveChangesAsync();
             }
             catch(Exception ex)
             {
-                return BadRequest($"Failed saving ex:{ex.Message}");
+                return BadRequest($"Failed saving ex:{ex.Message}\nCustomer:{customer}");
             }
             return Ok(result);
         }
