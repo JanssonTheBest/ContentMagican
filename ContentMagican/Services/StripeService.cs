@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Stripe;
 using Stripe.BillingPortal;
+using Stripe.Checkout;
 namespace ContentMagican.Services
 {
     public class StripeService
@@ -74,7 +75,10 @@ namespace ContentMagican.Services
             },
         },
                 Mode = "payment",
-                // Optionally, add other session options like payment methods, billing address collection, etc.
+                PaymentIntentData = new SessionPaymentIntentDataOptions
+                {
+                    SetupFutureUsage = "off_session", // This ensures the payment method is saved for future use
+                },
             };
 
             var sessionService = new Stripe.Checkout.SessionService();
