@@ -15,7 +15,7 @@ namespace ContentMagican.Controllers
         [HttpGet]
         public  async Task<IActionResult> Subscribe(long userId, string subscriptionId)
         {
-            string url = await _stripeService.StripeSession(userId,subscriptionId, Url.Action("Main", "Dashboard", null, Request.Scheme));
+            string url = await _stripeService.StripeSession(userId,subscriptionId, Url.Action("Main", "Dashboard", null, Request.Scheme),HttpContext);
 
 //#if (DEBUG)
 //            return RedirectToAction("Payment","StripeWebhook",new {id = "cs_test_a1tRwkSzrhQuNgntHSScFkFSzDb93FXpXD1YTEW5NK43hngtWoSVDMCEfQ" });

@@ -17,7 +17,7 @@ namespace ContentMagican.Services
             _userService = userService;
         }
 
-        public async Task<string> StripeSession(long userId, string productId, string ridirectUrl)
+        public async Task<string> StripeSession(long userId, string productId, string ridirectUrl, HttpContext ctx)
         {
             var productService = new ProductService();
             var product = await productService.GetAsync(productId);
@@ -25,13 +25,14 @@ namespace ContentMagican.Services
             {
                 CancelUrl = ridirectUrl,
                 SuccessUrl = ridirectUrl,
+                CustomerEmail = (await _userService.RetrieveUserInformation(ctx)).Email, // Stripe handles customer creation/retrieval
                 LineItems = new List<Stripe.Checkout.SessionLineItemOptions>
+                
     {
         new Stripe.Checkout.SessionLineItemOptions
         {
             Price = product.DefaultPriceId,
-            Quantity = 1,
-
+            Quantity = 1, 
         },
     },
                 Mode = "payment",
