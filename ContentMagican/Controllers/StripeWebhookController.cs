@@ -100,12 +100,23 @@ namespace ContentMagican.Controllers
                     return BadRequest("PaymentMethodId is missing from the PaymentIntent.");
                 }
 
-                // Attach payment method to customer
-                var attachOptions = new PaymentMethodAttachOptions
+                // Attach payment method to customer if not already attached
+                try
                 {
-                    Customer = user.CustomerId,
-                };
-                await paymentMethodService.AttachAsync(paymentMethodId, attachOptions);
+                    var attachOptions = new PaymentMethodAttachOptions
+                    {
+                        Customer = user.CustomerId,
+                    };
+                    await paymentMethodService.AttachAsync(paymentMethodId, attachOptions);
+                }
+                catch (StripeException ex)
+                {
+                    if (ex.Message.Contains("already been attached to another customer"))
+                    {
+                        return BadRequest("Payment method is already attached to another customer.");
+                    }
+                    throw; // Re-throw if the error is not about already being attached
+                }
 
                 // Update customer's default payment method
                 var customerUpdateOptions = new CustomerUpdateOptions
