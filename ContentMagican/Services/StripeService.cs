@@ -18,6 +18,14 @@ namespace ContentMagican.Services
             _userService = userService;
         }
 
+
+        public async Task<Subscription> GetRelevantSubscriptionFromCustomer(string id)
+        {
+            CustomerService customerService = new CustomerService();
+            var customer = await customerService.GetAsync(id);
+            customer.Subscriptions
+        }
+
         public async Task<string> StripeSession(long userId, string productId, string redirectUrl, HttpContext ctx)
         {
             var productService = new ProductService();
@@ -60,7 +68,7 @@ namespace ContentMagican.Services
             {
                 CancelUrl = redirectUrl,
                 SuccessUrl = redirectUrl,
-                Customer = stripeCustomerId, // Associate the session with the existing customer
+                Customer = stripeCustomerId, 
                 Metadata = new Dictionary<string, string>
         {
             { "UserId", userInfo.Id.ToString() },
@@ -74,11 +82,11 @@ namespace ContentMagican.Services
                 Quantity = 1,
             },
         },
-                Mode = "payment",
-                PaymentIntentData = new SessionPaymentIntentDataOptions
-                {
-                    SetupFutureUsage = "off_session", // This ensures the payment method is saved for future use
-                },
+                Mode = "subscription",
+                //PaymentIntentData = new SessionPaymentIntentDataOptions
+                //{
+                //    SetupFutureUsage = "off_session", 
+                //},
             };
 
             var sessionService = new Stripe.Checkout.SessionService();
