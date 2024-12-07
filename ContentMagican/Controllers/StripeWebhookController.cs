@@ -76,9 +76,9 @@ namespace ContentMagican.Controllers
                 result.CustomerId = (await _stripeRepository.GetCustomer(result.Email)).Id;
                 await _applicationDbContext.SaveChangesAsync();
             }
-            catch
+            catch(Exception ex)
             {
-                return BadRequest("Failed saving");
+                return BadRequest($"Failed saving ex:{ex.Message}");
             }
             return Ok(result);
         }
