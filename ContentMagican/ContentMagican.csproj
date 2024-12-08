@@ -20,4 +20,10 @@
     <Folder Include="wwwroot\MediaResources\Videos\" />
   </ItemGroup>
 
+	<ItemGroup>
+		<None Update="Tools\ffmpeg\ffmpeg.exe">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
 </Project>
