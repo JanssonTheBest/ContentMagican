@@ -1,4 +1,5 @@
-﻿using ContentMagican.Models;
+﻿using ContentMagican.DTOs;
+using ContentMagican.Models;
 using ContentMagican.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,9 +10,12 @@ namespace ContentMagican.Controllers
     public class TasksController : Controller
     {
         TaskService _taskService;
+        private readonly IWebHostEnvironment _env;
 
-        public TasksController(TaskService taskService)
+
+        public TasksController(TaskService taskService, IWebHostEnvironment env)
         {
+            _env = env;
             _taskService = taskService;
         }
 
@@ -31,8 +35,8 @@ namespace ContentMagican.Controllers
         [HttpGet]
         public IActionResult DeleteTasks(long taskId)
         {
-            _taskService.DeleteUserTask(HttpContext,taskId).GetAwaiter().GetResult();
-            return RedirectToAction("Main","Tasks");
+            _taskService.DeleteUserTask(HttpContext, taskId).GetAwaiter().GetResult();
+            return RedirectToAction("Main", "Tasks");
         }
 
         [HttpGet]
@@ -42,60 +46,6 @@ namespace ContentMagican.Controllers
             return View();
         }
 
-    //    [HttpGet]
-    //    public async Task<IActionResult> EditTasks(long taskId)
-    //    {
-
-    //        var tasks = await _taskService.GetUsersTasks(HttpContext);
-
-    //        var task = tasks.Where(a => a.Id == taskId).FirstOrDefault();
-
-    //        if(task == default)
-    //        {
-    //            return RedirectToAction("CreateTask", "Tasks");
-    //        }
-
-    //        var videoAutomation = await _taskService.GetVideoAutomationInfo(taskId);
-
-    //        return View("EdditTaskRedditVideoAutomationSettings", new EditTaskViewModel()
-    //        {
-    //            AdditionalInfo = task.AdditionalInfo,
-    //            GameplayVideo = videoAutomation.FFmpegString,
-    //            TextStyle = videoAutomation.FFmpegString,
-    //            Platform = "",
-    //            VideoDimensions = videoAutomation.FFmpegString,
-    //            VerticalResolution = true,
-    //            VideosPerDay = videoAutomation.Interval,
-    //            TaskId = taskId,
-    //            VideoLengthFrom = 1,
-    //            VideoLengthTo = 5,
-    //            VideoTitle = videoAutomation.FFmpegString
-    //        });
-
-           
-    //    }
-
-    //    [HttpGet]
-    //    public IActionResult SubmitEditTasks(
-    //         string videoDimensions,
-    //bool verticalResolution,
-    //string textStyle,
-    //string gameplayVideo,
-    //string platform,
-    //int videoLengthFrom,
-    //int videoLengthTo,
-    //int videosPerDay,
-    //string subreddit,
-    //string videoTitle,
-    //        long taskId
-    //        )
-    //    {
-
-
-
-    //        return RedirectToAction("Main", "Tasks");
-           
-    //    }
 
         [HttpPost]
         public IActionResult ChoseTaskType(string r)
@@ -107,8 +57,55 @@ namespace ContentMagican.Controllers
         [HttpPost]
         public IActionResult ChangeTaskSettings(string r)
         {
+            // Define allowed extensions for fonts, videos, and audios
+            string[] fontExtensions = { ".woff", ".woff2", ".ttf", ".otf" };
+            string[] videoExtensions = { ".mp4", ".avi", ".mov", ".wmv", ".flv" };
+            string[] audioExtensions = { ".mp3", ".wav", ".aac", ".ogg", ".flac" };
 
-            return View("RedditVideoAutomationSettings");
+            // Define folders for fonts, videos, and audios
+            string fontsFolder = Path.Combine(_env.WebRootPath, "MediaResources", "Fonts");
+            string videosFolder = Path.Combine(_env.WebRootPath, "MediaResources", "Videos");
+            string audiosFolder = Path.Combine(_env.WebRootPath, "MediaResources", "Audios");
+
+            // Enumerate font files
+            var fonts = Directory.EnumerateFiles(fontsFolder)
+                                 .Where(file => fontExtensions.Contains(Path.GetExtension(file).ToLower()))
+                                 .Select(file => new FontDto
+                                 {
+                                     Name = Path.GetFileNameWithoutExtension(file),
+                                     Path = "/MediaResources/Fonts/" + Path.GetFileName(file)
+                                 })
+                                 .ToList();
+
+            // Enumerate video files
+            var videos = Directory.EnumerateFiles(videosFolder)
+                                  .Where(file => videoExtensions.Contains(Path.GetExtension(file).ToLower()))
+                                  .Select(file => new VideoResourceDto
+                                  {
+                                      Name = Path.GetFileNameWithoutExtension(file),
+                                      Path = "/MediaResources/Videos/" + Path.GetFileName(file)
+                                  })
+                                  .ToList();
+
+            // Enumerate audio files
+            var audios = Directory.EnumerateFiles(audiosFolder)
+                                  .Where(file => audioExtensions.Contains(Path.GetExtension(file).ToLower()))
+                                  .Select(file => new AudioResourceDto
+                                  {
+                                      Name = Path.GetFileNameWithoutExtension(file),
+                                      Path = "/MediaResources/Audios/" + Path.GetFileName(file)
+                                  })
+                                  .ToList();
+
+            // Create the ViewModel with fonts, videos, and audios
+            var viewModel = new RedditVideoAutomationSettingsViewModel
+            {
+                fonts = fonts,
+                video = videos,
+                audio = audios
+            };
+
+            return View("RedditVideoAutomationSettings", viewModel);
         }
 
         [HttpPost]
@@ -121,14 +118,9 @@ namespace ContentMagican.Controllers
     int videoLengthFrom,
     int videoLengthTo,
     int videosPerDay,
-    string subreddit,
-    string videoTitle)
+    string taskDescription)
         {
-            // Validate the parameters here if needed
-            if (string.IsNullOrWhiteSpace(videoTitle))
-            {
-                ModelState.AddModelError("videoTitle", "Video title is required.");
-            }
+         
 
             // Validate videosPerDay
             if (videosPerDay < 1)
@@ -145,8 +137,7 @@ namespace ContentMagican.Controllers
      videoLengthFrom,
      videoLengthTo,
      videosPerDay, // Added this parameter
-     videoTitle,
-     subreddit,
+    taskDescription,
      HttpContext);
 
             return RedirectToAction("Main", "Tasks");

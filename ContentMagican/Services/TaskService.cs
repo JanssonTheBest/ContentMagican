@@ -41,8 +41,8 @@ namespace ContentMagican.Services
            int videoLengthFrom,
            int videoLengthTo,
            int videosPerDay,
-           string videoTitle,
-           string subReddit,
+           string taskDescription,
+ 
            HttpContext ctx)
         {
 
@@ -50,12 +50,12 @@ namespace ContentMagican.Services
             var task = new _Task()
             {
                 Created = DateTime.UtcNow,
-                Description = videoTitle ?? "",
+                Description = taskDescription ?? "",
                 Status = (int)TaskStatus.active,
                 Type = (int)TaskTypes.Video_Automation,
                 Subtype = (int)TaskSubTypes.Reddit_Stories,
                 UserId = user.Id,
-                AdditionalInfo = subReddit ?? ""
+                AdditionalInfo = ""
             };
 
 
@@ -64,7 +64,7 @@ namespace ContentMagican.Services
 
             await _applicationDbContext.VideoAutomation.AddAsync(new VideoAutomation()
             {
-                FFmpegString = await _ffmpegService.CreateFFmpegStringFromParameters(verticalResolution,textStyle,gameplayVideo,videoTitle),
+                FFmpegString = await _ffmpegService.CreateVideoPresetFromParameters(verticalResolution,textStyle,gameplayVideo),
                 Interval = videosPerDay,
                 TaskId = task.Id,
             });

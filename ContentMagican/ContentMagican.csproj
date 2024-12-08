@@ -14,4 +14,10 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\MediaResources\Fonts\" />
+    <Folder Include="wwwroot\MediaResources\Audios\" />
+    <Folder Include="wwwroot\MediaResources\Videos\" />
+  </ItemGroup>
+
 </Project>

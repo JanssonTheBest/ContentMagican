@@ -23,6 +23,15 @@ namespace ContentMagican.Services
         {
             CustomerService customerService = new CustomerService();
             var user = await _userService.RetrieveUserInformation(ctx);
+
+            if (string.IsNullOrEmpty(user.CustomerId))
+            {
+                return new Product
+                {
+                    Name = "Free Tier",
+                };
+            }
+
             var customer = await customerService.GetAsync(user.CustomerId);
             var subscriptionService = new SubscriptionService();
             var productService = new ProductService();

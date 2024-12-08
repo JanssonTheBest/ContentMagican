@@ -6,6 +6,7 @@ using ContentMagican.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -32,6 +33,9 @@ builder.Services.AddScoped<StripeService>();
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<JwtAuthorizationHandler>();
+
+builder.Services.AddHostedService<TaskHandlerService>();
+
 
 // Load JWT settings from configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
