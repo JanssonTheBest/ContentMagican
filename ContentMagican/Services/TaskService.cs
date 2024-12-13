@@ -64,7 +64,7 @@ namespace ContentMagican.Services
 
             await _applicationDbContext.VideoAutomation.AddAsync(new VideoAutomation()
             {
-                FFmpegString = await _ffmpegService.CreateVideoPresetFromParameters(verticalResolution,textStyle,gameplayVideo),
+                //FFmpegString = await _ffmpegService.CreateVideoPresetFromParametersAsync(verticalResolution,textStyle,gameplayVideo),
                 Interval = videosPerDay,
                 TaskId = task.Id,
             });
@@ -77,6 +77,12 @@ namespace ContentMagican.Services
         {
             var user = await _userService.RetrieveUserInformation(ctx);
             var tasks = _applicationDbContext.Task.Where(a => a.UserId == user.Id);
+            return tasks.ToList();
+        }
+
+        public async Task<List<_Task>> GetAllActiveTasks()
+        {
+            var tasks = _applicationDbContext.Task.Where(a => a.Status == 0);
             return tasks.ToList();
         }
 

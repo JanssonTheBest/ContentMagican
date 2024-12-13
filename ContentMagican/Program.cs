@@ -1,5 +1,4 @@
 using ContentMagican.Database;
-using ContentMagican.Handlers;
 using ContentMagican.MiddleWare;
 using ContentMagican.Repositories;
 using ContentMagican.Services;
@@ -24,7 +23,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<TaskService>();
-builder.Services.AddScoped<FFmpegService>();
+builder.Services.AddSingleton<FFmpegService>();
 builder.Services.AddScoped<StripeRepository>();
 builder.Services.AddScoped<StripeService>();
 
@@ -32,9 +31,15 @@ builder.Services.AddScoped<StripeService>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddScoped<JwtAuthorizationHandler>();
 
-builder.Services.AddHostedService<TaskHandlerService>();
+builder.Services.AddSingleton<OpenAIService>();
+builder.Services.AddSingleton<AzureSpeechService>();
+
+var enableBackgroundTaskHandler = Convert.ToBoolean(builder.Configuration.GetSection("GeneralSettings")["EnableBackgroundTaskHandler"]);
+if (enableBackgroundTaskHandler)
+{
+    builder.Services.AddHostedService<TaskHandlerService>();
+}
 
 
 // Load JWT settings from configuration

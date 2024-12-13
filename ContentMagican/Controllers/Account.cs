@@ -1,5 +1,4 @@
-﻿using ContentMagican.Handlers;
-using ContentMagican.Models;
+﻿using ContentMagican.Models;
 using ContentMagican.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;

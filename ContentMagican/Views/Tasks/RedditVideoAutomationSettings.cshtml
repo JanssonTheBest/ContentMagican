@@ -29,23 +29,6 @@
         <h1 class="text-center mb-4">Reddit Story Video Automation Settings</h1>
 
         <form asp-action="CreateRedditVideoAutomationTask" method="post">
-            <!-- Video Dimensions Dropdown -->
-            <div class="mb-3">
-                <label for="videoDimensions" class="form-label">Video Dimensions</label>
-                <select class="form-select" id="videoDimensions" name="VideoDimensions" required>
-                    <option value="1920x1080">1920x1080</option>
-                    <option value="1280x720">1280x720</option>
-                    <option value="640x480">640x480</option>
-                    <!-- Add more options as needed -->
-                </select>
-            </div>
-
-            <!-- Vertical Resolution Checkbox -->
-            <div class="mb-3 form-check">
-                <input type="checkbox" class="form-check-input" id="verticalResolution" name="VerticalResolution" value="true" checked>
-                <label class="form-check-label" for="verticalResolution">Vertical Resolution</label>
-            </div>
-
             <!-- Text Style Dropdown with Font Previews -->
             <div class="mb-3">
                 <label for="textStyle" class="form-label">Text Style</label>
@@ -65,7 +48,7 @@
             <div class="mb-3">
                 <label for="gameplayVideo" class="form-label">Gameplay Video</label>
                 <select class="form-select" id="gameplayVideo" name="GameplayVideo" required>
-                   
+                    
                     @foreach(var item in Model.video)
                     {
                         <option value="@item.Path">@item.Name</option>                        
@@ -85,32 +68,6 @@
                 </select>
             </div>
 
-            <!-- Approximate Video Length Range Selection -->
-            <div class="mb-3">
-                <label class="form-label">Approximate Video Length (minutes)</label>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="videoLengthFrom" class="form-label">Minimum Length</label>
-                        <select class="form-select" id="videoLengthFrom" name="VideoLengthFrom" required>
-                            <option value="0">0 min</option>
-                            <option value="1">1 min</option>
-                            <option value="2">2 min</option>
-                            <!-- Add more options as needed -->
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="videoLengthTo" class="form-label">Maximum Length</label>
-                        <select class="form-select" id="videoLengthTo" name="VideoLengthTo" required>
-                            <option value="5">5 min</option>
-                            <option value="10">10 min</option>
-                            <option value="15">15 min</option>
-                            <!-- Add more options as needed -->
-                        </select>
-                    </div>
-                </div>
-                <small class="form-text text-muted">The video length can be any duration between the selected minimum and maximum times.</small>
-            </div>
-
             <!-- Videos Per Day Dropdown -->
             <div class="mb-3">
                 <label for="videosPerDay" class="form-label">Videos Per Day</label>
@@ -124,8 +81,6 @@
                 </select>
                 <small class="form-text text-muted">Select how many videos should be published each day.</small>
             </div>
-
-           
 
             <!-- Video Title Input -->
             <div class="mb-3">
