@@ -22,7 +22,7 @@ public class AzureSpeechService
             throw new ArgumentNullException(nameof(_region), "Azure Speech region must not be null or empty.");
     }
 
-    public async Task<(byte[] audioData, List<(string Word, TimeSpan Timestamp)> wordTimings)> SynthesizeSpeechAsync(string text, string voiceName= "en-US-BrandonNeural")
+    public async Task<byte[]> SynthesizeSpeechAsync(string text, string voiceName= "en-US-BrandonNeural")
     {
         var speechConfig = SpeechConfig.FromSubscription(_subscriptionKey, _region);
         speechConfig.SpeechSynthesisVoiceName = voiceName;
@@ -34,12 +34,6 @@ public class AzureSpeechService
         using var audioConfig = AudioConfig.FromStreamOutput(pushStream);
         using var synthesizer = new SpeechSynthesizer(speechConfig, audioConfig);
 
-        // Event: Depending on SDK version, try WordBoundary or SynthesizingWordBoundary
-        synthesizer.WordBoundary += (s, e) =>
-        {
-            var time = TimeSpan.FromTicks((long)(e.AudioOffset / 100));
-            wordBoundaries.Add((e.Text, time));
-        };
 
         var result = await synthesizer.SpeakTextAsync(text);
 
@@ -56,31 +50,24 @@ public class AzureSpeechService
             }
         }
 
-        // Retrieve audio data from the callback
         var audioData = callback.GetAudioData();
-        return (audioData, wordBoundaries);
+        return audioData;
     }
 
     public class MemoryAudioCallback : PushAudioOutputStreamCallback
     {
         private readonly MemoryStream _memoryStream = new MemoryStream();
-
-        // This method is called by the SDK to provide audio data.
-        // Here we write it into our MemoryStream.
         public override uint Write(byte[] dataBuffer)
         {
             _memoryStream.Write(dataBuffer, 0, dataBuffer.Length);
             return (uint)dataBuffer.Length;
         }
 
-        // This method is called when the stream is closed.
-        // Here we can reset our stream position to the beginning, if desired.
         public override void Close()
         {
             _memoryStream.Seek(0, SeekOrigin.Begin);
         }
 
-        // A helper to get the synthesized audio data after synthesis completes.
         public byte[] GetAudioData() => _memoryStream.ToArray();
     }
 }

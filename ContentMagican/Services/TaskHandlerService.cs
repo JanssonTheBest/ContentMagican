@@ -79,7 +79,7 @@ namespace ContentMagican.Services
                 string prompt = @"
                 {
                     ""title"": ""Write a creepy first-person story in Reddit style"",
-                    ""content"": ""Use a conversational tone, include realistic details, and focus on suspense. Format the response as a JSON object with 'title' and 'content' fields.""
+                    ""content"": ""Use a conversational tone, include realistic details, and focus on suspense, Also 'I'm looking for a horror story that uses ghosts as the villain and has a shocking conclusion. Format the response as a JSON object with 'title' and 'content' fields.""
                 }";
                 var message = await _openAIService.AskQuestionAsync(prompt);
                 int index1 = message.IndexOf('{');
@@ -89,20 +89,18 @@ namespace ContentMagican.Services
 
                 var result = await _azureSpeechService.SynthesizeSpeechAsync(story.content);
                 //await File.WriteAllBytesAsync(ttsPath, result.audioData, stoppingToken);
-                var words = await _openAIService.TranscribeMp3Async(result.audioData);
+                var words = await _openAIService.TranscribeMp3Async(result);
 
 
                 _ffmpegService.CreateVideoWithSubtitles(
                     @"C:\Users\chfzs\source\repos\ContentMagican\ContentMagican\bin\Debug\net8.0\wwwroot\MediaResources\Audios\Creepy.mp3",
                     @"C:\Users\chfzs\source\repos\ContentMagican\ContentMagican\bin\Debug\net8.0\wwwroot\MediaResources\Videos\MinecraftGameplay.mp4",
-                    result.audioData,words,
+                    result,words,
                     
                     //@"C:\Users\chfzs\source\repos\ContentMagican\ContentMagican\bin\Debug\net8.0\wwwroot\MediaResources\Fonts\Steelfish Outline.otf",
                     Path.Combine(relativePath,"output.mp4")
                     );
                 
-
-
                 _logger.LogInformation($"Task ID {task.Id} processed successfully. TTS saved at {relativePath}.");
             }
             catch (Exception ex)
