@@ -10,5 +10,7 @@
         public int Status { get; set; }
         public DateTime Created { get; set; }
         public string AdditionalInfo { get; set; }
+        public int SocialMediaAccessSessionsId { get; set; }
+
     }
 }

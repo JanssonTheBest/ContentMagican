@@ -2,6 +2,7 @@
 using ContentMagican.DTOs;
 using System.Collections.Concurrent;
 using System.Text.Json;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace ContentMagican.Services
 {
@@ -13,18 +14,21 @@ namespace ContentMagican.Services
         private readonly AzureSpeechService _azureSpeechService;
         private readonly FFmpegService _ffmpegService;
 
+
         public TaskHandlerService(
             ILogger<TaskHandlerService> logger,
             IServiceScopeFactory serviceScopeFactory,
             OpenAIService openAIService,
             AzureSpeechService azureSpeechService,
-            FFmpegService ffmpegService)
+            FFmpegService ffmpegService
+       )
         {
             _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
             _openAIService = openAIService;
             _azureSpeechService = azureSpeechService;
             _ffmpegService = ffmpegService;
+
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -37,7 +41,11 @@ namespace ContentMagican.Services
 
                     using var scope = _serviceScopeFactory.CreateScope();
                     var taskService = scope.ServiceProvider.GetRequiredService<TaskService>();
+
+                    
+
                     var tasks = await taskService.GetAllActiveTasks();
+                    
 
                     if (tasks == null || !tasks.Any())
                     {
@@ -68,6 +76,9 @@ namespace ContentMagican.Services
         {
             try
             {
+                using var scope = _serviceScopeFactory.CreateScope();
+                var tiktokService = scope.ServiceProvider.GetRequiredService<TiktokService>();
+
                 _logger.LogInformation($"Processing task ID {task.Id}...");
 
                 string tempId = Guid.NewGuid().ToString();
@@ -102,6 +113,9 @@ namespace ContentMagican.Services
                     );
                 
                 _logger.LogInformation($"Task ID {task.Id} processed successfully. TTS saved at {relativePath}.");
+                var taskService = scope.ServiceProvider.GetRequiredService<TaskService>();
+                var accessSession = await taskService.GetSocialMediaAccessSession(task.SocialMediaAccessSessionsId);
+                await tiktokService.UploadVideoAsync(accessSession.accesstoken, Path.Combine(relativePath, "output.mp4"),story.title,new string[] {"scary","creepy","redditstories"});
             }
             catch (Exception ex)
             {

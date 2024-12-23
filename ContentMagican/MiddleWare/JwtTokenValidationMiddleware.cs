@@ -17,6 +17,16 @@ namespace ContentMagican.MiddleWare
 
         public async Task InvokeAsync(HttpContext context)
         {
+//#if DEBUG
+//            if (context.Request.Host.Host.Contains("ngrok") &&
+//               context.Request.Path.Equals("/Tasks/ChangeTaskSettings", StringComparison.OrdinalIgnoreCase))
+//            {
+//                var localhostUrl = $"https://localhost:7088{context.Request.Path}";
+//                context.Response.Redirect(localhostUrl);
+//                return;
+//            }
+//#endif
+
             using (var scope = _serviceProvider.CreateScope())
             {
                 var userService = scope.ServiceProvider.GetRequiredService<UserService>();
@@ -56,7 +66,9 @@ namespace ContentMagican.MiddleWare
                     if (context.Request.Path.StartsWithSegments("/Account") 
                         || context.Request.Path.StartsWithSegments("/Info") 
                         || context.Request.Path.StartsWithSegments("/tiktokXsOLE8u4HYO2pcOTRIhcNtrlkkKW6ulr.txt")
-                        || context.Request.Path.StartsWithSegments("/Stripewebhook"))
+                        || context.Request.Path.StartsWithSegments("/Stripewebhook")
+                        || context.Request.Path.StartsWithSegments("/Tiktok")
+                        )
                     {
                         // Allow unauthenticated users to access /Account and public endpoints
                         await _next(context);

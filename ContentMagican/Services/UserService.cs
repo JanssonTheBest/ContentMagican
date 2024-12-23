@@ -15,7 +15,6 @@ namespace ContentMagican.Services
     {
         private readonly IConfiguration _configuration;
         ApplicationDbContext _applicationDbContext;
-        HttpContext _httpContext;
         private readonly TokenValidationParameters _tokenValidationParameters;
 
 
@@ -165,6 +164,13 @@ namespace ContentMagican.Services
             };
         }
 
-     
+
+        public async Task<IEnumerable<SocialMediaAccessSession>> RetrieveUserSocialMediaAccessSessions(HttpContext ctx)
+        {
+            var user = await RetrieveUserInformation(ctx);
+            return _applicationDbContext.SocialMediaAccessSessions.Where(a => a.userId == user.Id);
+        }
+
+
     }
 }

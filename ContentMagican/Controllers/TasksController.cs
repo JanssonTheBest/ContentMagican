@@ -11,12 +11,13 @@ namespace ContentMagican.Controllers
     {
         TaskService _taskService;
         private readonly IWebHostEnvironment _env;
+        UserService _userService;
 
-
-        public TasksController(TaskService taskService, IWebHostEnvironment env)
+        public TasksController(TaskService taskService, IWebHostEnvironment env, UserService userService)
         {
             _env = env;
             _taskService = taskService;
+            _userService = userService;
         }
 
 
@@ -25,6 +26,18 @@ namespace ContentMagican.Controllers
 
             var list = (await _taskService.GetUsersTasks(HttpContext));
             list.RemoveAll(a => a.Status == (int)TaskService.TaskStatus.deleted);
+
+
+            foreach (var task in list)
+            {
+                var session = await _taskService.GetSocialMediaAccessSession(task.SocialMediaAccessSessionsId);
+
+                if (session != null)
+                {
+                    task.AdditionalInfo = $"{session.UserName},{session.AvatarUrl},{session.socialmedia_name}";
+                }
+
+            }
 
             return View(new TasksViewModel()
             {
@@ -54,8 +67,8 @@ namespace ContentMagican.Controllers
             return View("ChoseVideoAutomationContentType");
         }
 
-        [HttpPost]
-        public IActionResult ChangeTaskSettings(string r)
+        [HttpGet]
+        public async Task<IActionResult> ChangeTaskSettings(string r)
         {
             // Define allowed extensions for fonts, videos, and audios
             string[] fontExtensions = { ".woff", ".woff2", ".ttf", ".otf" };
@@ -98,8 +111,10 @@ namespace ContentMagican.Controllers
                                   .ToList();
 
             // Create the ViewModel with fonts, videos, and audios
+            var ss = await _userService.RetrieveUserSocialMediaAccessSessions(HttpContext);
             var viewModel = new RedditVideoAutomationSettingsViewModel
             {
+                accounts = ss.OrderBy(a => a.CreatedAt).ToList(),
                 fonts = fonts,
                 video = videos,
                 audio = audios
@@ -110,37 +125,38 @@ namespace ContentMagican.Controllers
 
         [HttpPost]
         public async Task<IActionResult> CreateRedditVideoAutomationTask(
-    string videoDimensions,
-    bool verticalResolution,
-    string textStyle,
-    string gameplayVideo,
-    string platform,
-    int videoLengthFrom,
-    int videoLengthTo,
-    int videosPerDay,
+    string AccountToPublish,
+    string TextStyle,
+    string GameplayVideo,
+    int VideosPerDay,
     string taskDescription)
+
         {
-         
+
 
             // Validate videosPerDay
-            if (videosPerDay < 1)
+            if (VideosPerDay < 1)
             {
                 ModelState.AddModelError("videosPerDay", "Please select a valid number of videos per day.");
             }
 
 
-            await _taskService.CreateRedditVideoAutomationTask(videoDimensions,
-     verticalResolution,
-     textStyle,
-     gameplayVideo,
-     platform,
-     videoLengthFrom,
-     videoLengthTo,
-     videosPerDay, // Added this parameter
-    taskDescription,
-     HttpContext);
+            if (int.TryParse(AccountToPublish, out var socialMediaAccesSessionId))
+            {
+                await _taskService.CreateRedditVideoAutomationTask(
+ TextStyle,
+ GameplayVideo,
+ socialMediaAccesSessionId,
+ VideosPerDay, // Added this parameter
+taskDescription,
+ HttpContext);
+                return RedirectToAction("Main", "Tasks");
 
-            return RedirectToAction("Main", "Tasks");
+            }
+            else
+            {
+                return BadRequest("wrong id");
+            }
         }
 
     }

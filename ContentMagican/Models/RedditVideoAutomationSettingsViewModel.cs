@@ -1,4 +1,5 @@
-﻿using ContentMagican.DTOs;
+﻿using ContentMagican.Database;
+using ContentMagican.DTOs;
 
 namespace ContentMagican.Models
 {
@@ -9,6 +10,9 @@ namespace ContentMagican.Models
 
                 
         }
+
+        public List<SocialMediaAccessSession> accounts = new List<SocialMediaAccessSession>();
+
 
         public List<FontDto> fonts = new List<FontDto>();
         public List<AudioResourceDto> audio = new List<AudioResourceDto>();

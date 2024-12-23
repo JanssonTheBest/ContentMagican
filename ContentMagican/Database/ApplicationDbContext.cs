@@ -9,7 +9,7 @@ namespace ContentMagican.Database
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
-
+            this.Database.SetCommandTimeout(60*2);
         }
 
         //public DbSet<Plan> Plans { get; set; }
@@ -17,6 +17,7 @@ namespace ContentMagican.Database
         public DbSet<_Task> Task { get; set; }
         public DbSet<VideoAutomation> VideoAutomation { get; set; }
         public DbSet<OrderLog> Orders { get; set; }
+        public DbSet<SocialMediaAccessSession> SocialMediaAccessSessions { get; set; }
     }
 
 }

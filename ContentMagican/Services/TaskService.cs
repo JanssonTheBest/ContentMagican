@@ -33,16 +33,14 @@ namespace ContentMagican.Services
             deleted,
         }
 
-        public async Task CreateRedditVideoAutomationTask(string videoDimensions,
-           bool verticalResolution,
-           string textStyle,
-           string gameplayVideo,
-           string platform,
-           int videoLengthFrom,
-           int videoLengthTo,
-           int videosPerDay,
-           string taskDescription,
- 
+        public async Task CreateRedditVideoAutomationTask(
+    string TextStyle,
+    string GameplayVideo,
+    int socialMediaAccessSessionId,
+    int VideosPerDay,
+    string taskDescription,
+
+
            HttpContext ctx)
         {
 
@@ -55,7 +53,8 @@ namespace ContentMagican.Services
                 Type = (int)TaskTypes.Video_Automation,
                 Subtype = (int)TaskSubTypes.Reddit_Stories,
                 UserId = user.Id,
-                AdditionalInfo = ""
+                AdditionalInfo = "",
+                SocialMediaAccessSessionsId = socialMediaAccessSessionId
             };
 
 
@@ -65,7 +64,7 @@ namespace ContentMagican.Services
             await _applicationDbContext.VideoAutomation.AddAsync(new VideoAutomation()
             {
                 //FFmpegString = await _ffmpegService.CreateVideoPresetFromParametersAsync(verticalResolution,textStyle,gameplayVideo),
-                Interval = videosPerDay,
+                Interval = VideosPerDay,
                 TaskId = task.Id,
             });
 
@@ -84,6 +83,17 @@ namespace ContentMagican.Services
         {
             var tasks = _applicationDbContext.Task.Where(a => a.Status == 0);
             return tasks.ToList();
+        }
+
+        public async Task<SocialMediaAccessSession> GetSocialMediaAccessSession(int socialMediaAccessSessionId)
+        {
+            var session = _applicationDbContext.SocialMediaAccessSessions.Where(a=>a.id == socialMediaAccessSessionId).FirstOrDefault();
+            if(session == default)
+            {
+                return null;
+            }
+
+            return session;
         }
 
         public async Task DeleteUserTask(HttpContext ctx, long taskId)

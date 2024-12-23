@@ -1,4 +1,5 @@
-﻿@model TasksViewModel
+﻿@using ContentMagican.Services
+@model TasksViewModel
 
 <div class="container mt-4">
     <div class="text-center mb-4">
@@ -24,6 +25,7 @@
                         <th scope="col" data-field="status">Status</th>
                         <th scope="col" data-field="created">Created</th>
                         <th scope="col" data-field="id">Id</th>
+                        <th scope="col" data-field="account">Account</th> <!-- New Account Column -->
                         <th scope="col" data-field="actions">Actions</th>
                     </tr>
                 </thead>
@@ -32,10 +34,24 @@
                     {
                         <tr>
                             <td>@Model.Tasks[i].Description</td>
-                            <td>@Model.Tasks[i].Type</td>
-                            <td>@Model.Tasks[i].Status</td>
+                            <td>@(((TaskService.TaskSubTypes)Model.Tasks[i].Type).ToString().Replace('_',' '))</td>
+                            <td>@(((TaskService.TaskStatus)Model.Tasks[i].Status).ToString().Replace('_',' '))</td>
                             <td>@Model.Tasks[i].Created.ToString("yyyy-MM-dd")</td>
                             <td>@Model.Tasks[i].Id</td>
+                            <td>
+                                <div class="rounded-card d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <img src="@Model.Tasks[i].AdditionalInfo.Split(',')[1]" alt="Icon" class="icon-size me-3" />
+                                        <span>@Model.Tasks[i].AdditionalInfo.Split(',')[0]</span>
+                                    </div>
+                                    @if (Model.Tasks[i].AdditionalInfo.Split(',')[2].Trim().ToLower() == "tiktok")
+                                    {
+                                        <img src="/Resources/tiktok.png" alt="TikTok Icon" style="width: 24px; height: 24px;" />
+                                    }
+                                </div>
+                            </td>
+
+
                             <td>
                                 <div class="dropdown" style="position: relative;">
                                     <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="actionDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -54,6 +70,7 @@
         </div>
     </div>
 </div>
+
 
 <style>
     /* Add a subtle border to the container */
@@ -103,5 +120,25 @@
     /* Ensure the table container does not clip content */
     .table-responsive {
         overflow: visible !important;
+    }
+
+    .rounded-card {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 20px; /* Rounded edges */
+        background-color: #f8f9fa; /* Light grey background */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    }
+
+    .icon-size {
+        width: 40px; /* Set desired width for the image */
+        height: 40px; /* Set desired height for the image */
+        object-fit: cover; /* Ensure the image fits within the dimensions */
+        border-radius: 50%; /* Makes the image circular */
+    }
+
+    .me-3 {
+        margin-right: 1rem; /* Space between the image and text */
     }
 </style>
