@@ -71,7 +71,7 @@
                                     -1px 1px 0 #000,
                                     1px -1px 0 #000,
                                     -1px -1px 0 #000;
-                                "
+                                    "
                             data-value="@font">
                             @font
                         </li>
@@ -83,6 +83,27 @@
             </small>
         </div>
 
+        <!-- Story Genre Dropdown (Newly Added) -->
+        <div class="mb-3">
+            <label for="storyGenre" class="form-label">Story Genre</label>
+            <select class="form-select" id="storyGenre" name="StoryGenre" required>
+                <option value="" disabled selected>Select a genre</option>
+                <option value="action">Action</option>
+                <option value="comedy">Comedy</option>
+                <option value="drama">Drama</option>
+                <option value="horror">Horror</option>
+                <option value="sci-fi">Sci-Fi</option>
+                <option value="romance">Romance</option>
+                <option value="thriller">Thriller</option>
+                <option value="fantasy">Fantasy</option>
+                <option value="documentary">Documentary</option>
+                <option value="randomized">Randomized</option>
+            </select>
+            <small class="form-text text-muted">
+                Choose a genre for your story video.
+            </small>
+        </div>
+        <!-- End of Story Genre Dropdown -->
         <!-- Gameplay Video Choice Dropdown -->
         <div class="mb-3">
             <label for="gameplayVideo" class="form-label">Gameplay Video</label>

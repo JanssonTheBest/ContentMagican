@@ -34,7 +34,7 @@ builder.Services.AddControllersWithViews();
 
 
 builder.Services.AddSingleton<OpenAIService>();
-builder.Services.AddSingleton<AzureSpeechService>();
+//builder.Services.AddSingleton<AzureSpeechService>();
 
 var enableBackgroundTaskHandler = Convert.ToBoolean(builder.Configuration.GetSection("GeneralSettings")["EnableBackgroundTaskHandler"]);
 if (enableBackgroundTaskHandler)

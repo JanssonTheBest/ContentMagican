@@ -1,6 +1,8 @@
 ﻿using ContentMagican.Database;
 using ContentMagican.DTOs;
+using Microsoft.AspNetCore.Http.HttpResults;
 using System.Collections.Concurrent;
+using System.Reflection;
 using System.Text.Json;
 using static System.Formats.Asn1.AsnWriter;
 
@@ -11,7 +13,7 @@ namespace ContentMagican.Services
         private readonly ILogger<TaskHandlerService> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly OpenAIService _openAIService;
-        private readonly AzureSpeechService _azureSpeechService;
+        //private readonly AzureSpeechService _azureSpeechService;
         private readonly FFmpegService _ffmpegService;
 
 
@@ -19,16 +21,14 @@ namespace ContentMagican.Services
             ILogger<TaskHandlerService> logger,
             IServiceScopeFactory serviceScopeFactory,
             OpenAIService openAIService,
-            AzureSpeechService azureSpeechService,
-            FFmpegService ffmpegService
-       )
+            //AzureSpeechService azureSpeechService,
+            FFmpegService ffmpegService)
         {
             _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
             _openAIService = openAIService;
-            _azureSpeechService = azureSpeechService;
+            //_azureSpeechService = azureSpeechService;
             _ffmpegService = ffmpegService;
-
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,10 +42,10 @@ namespace ContentMagican.Services
                     using var scope = _serviceScopeFactory.CreateScope();
                     var taskService = scope.ServiceProvider.GetRequiredService<TaskService>();
 
-                    
+
 
                     var tasks = await taskService.GetAllActiveTasks();
-                    
+
 
                     if (tasks == null || !tasks.Any())
                     {
@@ -80,42 +80,57 @@ namespace ContentMagican.Services
                 var tiktokService = scope.ServiceProvider.GetRequiredService<TiktokService>();
 
                 _logger.LogInformation($"Processing task ID {task.Id}...");
+                var appDbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var videoAutomation = appDbContext.VideoAutomation.Where(a => a.TaskId == task.Id).FirstOrDefault();
+                var contentInfo = JsonSerializer.Deserialize<ContentInfo>(videoAutomation.FFmpegString);
+
+
+
 
                 string tempId = Guid.NewGuid().ToString();
                 string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string relativePath = Path.Combine(baseDirectory, "temp", "temp", tempId); 
+                string relativePath = Path.Combine(baseDirectory, "temp", "temp", tempId);
                 string ttsPath = Path.Combine(relativePath, "tts.mp3");
                 Directory.CreateDirectory(relativePath);
-
-                string prompt = @"
+                string mediaResourcesPath = Path.Combine(baseDirectory,"wwwroot\\MediaResources");
+                string prompt = "";
+                string[] tags = Array.Empty<string>();
+                switch ((TaskService.TaskSubTypes)task.Subtype)
                 {
-                    ""title"": ""Write a creepy first-person story in Reddit style"",
-                    ""content"": ""Use a conversational tone, include realistic details, and focus on suspense, Also 'I'm looking for a horror story that uses ghosts as the villain and has a shocking conclusion. Format the response as a JSON object with 'title' and 'content' fields.""
-                }";
+                    case TaskService.TaskSubTypes.Reddit_Stories:
+
+                        prompt = $"Create a creative and unique first-person story in Reddit style, incorporating {contentInfo.AdditionalInfo}. Ensure it has a distinct voice and approach to avoid similarities with existing stories. (your answer is only alowed to contain title and content formated in json)";
+                        tags = new string[] { "#redditstories", "#redditstory" };
+
+                        break;
+                    case TaskService.TaskSubTypes.Dark_Psychology:
+                        prompt = "Create a JSON with a title and content for a dark psychology TikTok idea about dark psychology, and such encounters. Include examples to make viewers reflect.(Answer only with the json)";
+                        tags = new string[] { "#manipulation", "#darkpsychology" };
+
+                        break;
+                }
+
                 var message = await _openAIService.AskQuestionAsync(prompt);
                 int index1 = message.IndexOf('{');
-                int index2 = message.LastIndexOf('}')+1;
-                message = message.Substring(index1, index2-index1);
+                int index2 = message.LastIndexOf('}') + 1;
+                message = message.Substring(index1, index2 - index1);
                 var story = JsonSerializer.Deserialize<StoryDto>(message);
 
-                var result = await _azureSpeechService.SynthesizeSpeechAsync(story.content);
-                //await File.WriteAllBytesAsync(ttsPath, result.audioData, stoppingToken);
+                var result = await _openAIService.GenerateAudioFromTextAsync(story.content, speed: contentInfo.VoiceSpeed,voice:contentInfo.TextToSpeechVoice);
                 var words = await _openAIService.TranscribeMp3Async(result);
 
 
                 _ffmpegService.CreateVideoWithSubtitles(
-                    @"C:\Users\chfzs\source\repos\ContentMagican\ContentMagican\bin\Debug\net8.0\wwwroot\MediaResources\Audios\Creepy.mp3",
-                    @"C:\Users\chfzs\source\repos\ContentMagican\ContentMagican\bin\Debug\net8.0\wwwroot\MediaResources\Videos\MinecraftGameplay.mp4",
-                    result,words,
-                    
-                    //@"C:\Users\chfzs\source\repos\ContentMagican\ContentMagican\bin\Debug\net8.0\wwwroot\MediaResources\Fonts\Steelfish Outline.otf",
-                    Path.Combine(relativePath,"output.mp4")
+                    Path.Combine(mediaResourcesPath,contentInfo.BackgroundAudio),
+                    Path.Combine(mediaResourcesPath, contentInfo.BackgroundVideo),
+                    result, words,
+                                        Path.Combine(relativePath, "output.mp4"), true,contentInfo.TextToSpeechVolume,contentInfo.BackgroundAudioVolume
                     );
-                
+
                 _logger.LogInformation($"Task ID {task.Id} processed successfully. TTS saved at {relativePath}.");
                 var taskService = scope.ServiceProvider.GetRequiredService<TaskService>();
                 var accessSession = await taskService.GetSocialMediaAccessSession(task.SocialMediaAccessSessionsId);
-                await tiktokService.UploadVideoAsync(accessSession.accesstoken, Path.Combine(relativePath, "output.mp4"),story.title,new string[] {"scary","creepy","redditstories"});
+                await tiktokService.UploadVideoAsync(accessSession.accesstoken, Path.Combine(relativePath, "output.mp4"), story.title,tags);
             }
             catch (Exception ex)
             {

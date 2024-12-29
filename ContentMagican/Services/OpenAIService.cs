@@ -97,6 +97,42 @@ namespace ContentMagican.Services
             return result;
         }
 
+        public async Task<byte[]> GenerateAudioFromTextAsync(string text, string model = "tts-1-hd", string voice = "onyx", string responseFormat = "mp3", double speed = 1.0)
+        {
+            if (string.IsNullOrEmpty(text))
+                throw new ArgumentNullException(nameof(text), "Text must not be null or empty.");
+
+            using var httpClient = GetHttpClient();
+
+            // Create the JSON payload
+            var payload = new
+            {
+                model = model,
+                input = text,
+                voice = voice,
+                response_format = responseFormat,
+                speed = speed
+            };
+
+            // Serialize the payload to JSON
+            var jsonPayload = JsonSerializer.Serialize(payload);
+            var content = new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json");
+
+            // Send the POST request
+            var response = await httpClient.PostAsync("https://api.openai.com/v1/audio/speech", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"OpenAI TTS API call failed: {error}");
+            }
+
+            // Return the audio content as a byte array
+            return await response.Content.ReadAsByteArrayAsync();
+        }
+
+
+
         private class WhisperTranscriptionResponse
         {
             [JsonPropertyName("words")]

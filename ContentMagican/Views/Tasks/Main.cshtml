@@ -34,7 +34,7 @@
                     {
                         <tr>
                             <td>@Model.Tasks[i].Description</td>
-                            <td>@(((TaskService.TaskSubTypes)Model.Tasks[i].Type).ToString().Replace('_',' '))</td>
+                            <td>@(((TaskService.TaskSubTypes)Model.Tasks[i].Subtype).ToString().Replace('_',' '))</td>
                             <td>@(((TaskService.TaskStatus)Model.Tasks[i].Status).ToString().Replace('_',' '))</td>
                             <td>@Model.Tasks[i].Created.ToString("yyyy-MM-dd")</td>
                             <td>@Model.Tasks[i].Id</td>

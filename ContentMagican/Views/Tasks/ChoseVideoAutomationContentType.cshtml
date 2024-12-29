@@ -1,74 +1,124 @@
 ﻿@using ContentMagican.Services
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
 @{
+    // If you need any logic here
 }
 
+<style>
+    /* 9:16 ratio => height is ~177.78% of width for vertical Shorts */
+    .ratio-9x16 {
+        --bs-aspect-ratio: 177.78%;
+    }
 
+    /* Highlight selected card */
+    .clickable-card.selected {
+        border: 2px solid #007bff;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+    }
 
+    /* Scrollable container for card grid */
+    .card-scrollbox {
+        max-height: 600px; /* Adjust as needed */
+        overflow-y: auto;
+        overflow-x: hidden; /* Disable horizontal scroll */
+        padding-right: 15px; /* Optional: To prevent content from being hidden under the scrollbar */
+    }
 
+        /* Ensure the row takes full width and centers its content */
+        .card-scrollbox .row {
+            margin-right: 0;
+            margin-left: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center; /* Center the columns */
+        }
 
+    /* Disable pointer events on the iframe so user can't interact/click inside it */
+    .clickable-card iframe {
+        pointer-events: none;
+    }
+
+    /* Ensure the card takes the full width of its column */
+    .clickable-card {
+        width: 100%;
+    }
+
+    /* Optional: Reduce card padding and margins for smaller size */
+    .card-body {
+        padding: 0.5rem; /* Reduced from default */
+    }
+
+    /* Optional: Adjust font sizes for smaller cards */
+    .card-title {
+        font-size: 1rem; /* Adjust as needed */
+    }
+
+    /* Optional: Adjust the iframe ratio if needed */
+    .ratio-9x16 iframe {
+        width: 100%;
+        height: 100%;
+    }
+</style>
 
 <div class="container mt-4">
     <h1 class="text-center mb-4">Choose a content type</h1>
 
-    <div class="row">
-        <form action="@Url.Action("ChangeTaskSettings","Tasks")" method="get" style="min-height:10vh">
-
-            <div class="overflow-scroll">
-
-                @for (int i = 0; i < Enum.GetNames(typeof(TaskService.TaskSubTypes)).Length; i++)
+    <form action="@Url.Action("ChangeTaskSettings","Tasks")" method="get" style="min-height:10vh">
+        <!-- Scrollable container that holds the cards. -->
+        <div class="card-scrollbox mb-3">
+            <!-- Card Grid with increased columns for smaller cards and centered alignment -->
+            <div class="row row-cols-2 row-cols-sm-4 row-cols-md-6 g-3 justify-content-center">
+                @for (int i = 0; i < TaskService.videoAutomationAlternatives.Count; i++)
                 {
-                    <!-- First Box -->
-                    <div class="card" style="align-items:center; padding:10px; margin:3px;">
-                        <div class="col-12 col-sm-6 col-md-4 mb-0" style="display:flex; flex-direction:row; width:100%; margin: 0 auto">
-
-                            <!-- Updated to include unique id and class -->
-                            <input type="radio" class="radioButton" id="q@i" name="r" value="@i" style="width:10%">
-                            <!-- Associated label for better accessibility -->
-                            <label for="q@i" style="width:90%; margin:0 auto">
-                                @Enum.GetNames(typeof(TaskService.TaskSubTypes))[i].Replace('_', ' ')
-                            </label>
+                    <div class="col">
+                        <div class="card clickable-card h-100" data-value="@i">
+                            <!-- Use the custom ratio for vertical Shorts -->
+                            <div class="ratio ratio-9x16">
+                                @Html.Raw(TaskService.videoAutomationAlternatives[i].iframeUrl)
+                            </div>
+                            <div class="card-body text-center">
+                                <h5 class="card-title mb-0">
+                                    @TaskService.videoAutomationAlternatives[i].type.ToString().Replace('_', ' ')
+                                </h5>
+                            </div>
                         </div>
                     </div>
                 }
-                </div>
+            </div>
+        </div>
 
+        <!-- Hidden input to store selected option index -->
+        <input type="hidden" name="r" id="selectedOption" />
 
-
-                <!-- Changed to a button with disabled attribute -->
-                <div class="d-flex justify-content-end mb-3" style="display:flex; justify-content:right;">
-                    <button type="submit" class="btn btn-primary" id="nextButton" disabled style="margin:5px; height:40px">
-                        Next
-                    </button>
-                </div>
-        </form>
-    </div>
+        <!-- Next button remains visible even if card list is tall -->
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary" id="nextButton" disabled style="height:40px">
+                Next
+            </button>
+        </div>
+    </form>
 </div>
 
-<!-- JavaScript to handle enabling/disabling the Next button -->
+<!-- JavaScript to handle card selection and enabling the Next button -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const radioButtons = document.querySelectorAll('.radioButton');
+        const cards = document.querySelectorAll('.clickable-card');
         const nextButton = document.getElementById('nextButton');
+        const hiddenInput = document.getElementById('selectedOption');
 
-        function checkRadioButtons() {
-            let checked = false;
-            radioButtons.forEach(function (radio) {
-                if (radio.checked) {
-                    checked = true;
-                }
-            });
-            nextButton.disabled = !checked;
+        function clearSelections() {
+            cards.forEach(card => card.classList.remove('selected'));
         }
 
-        // Initially disable the Next button
-        nextButton.disabled = true;
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Clear previous selection and mark the clicked card as selected
+                clearSelections();
+                card.classList.add('selected');
 
-        // Add event listeners to all radio buttons
-        radioButtons.forEach(function (radio) {
-            radio.addEventListener('change', checkRadioButtons);
+                // Update hidden input value and enable Next button
+                hiddenInput.value = card.dataset.value;
+                nextButton.disabled = false;
+            });
         });
     });
 </script>

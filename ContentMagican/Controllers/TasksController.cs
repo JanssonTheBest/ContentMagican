@@ -70,6 +70,35 @@ namespace ContentMagican.Controllers
         [HttpGet]
         public async Task<IActionResult> ChangeTaskSettings(string r)
         {
+            var type = (TaskService.TaskSubTypes)Convert.ToInt32(r);
+
+            switch (type)
+            {
+                case TaskService.TaskSubTypes.Reddit_Stories:
+                    return await RedditVideoAutomationSettings();
+
+                case TaskService.TaskSubTypes.Dark_Psychology:
+                    return await DarkPsychologyVideoAutomationSettings();
+
+                    default:return BadRequest();
+            }
+        }
+
+
+        public async Task<IActionResult> DarkPsychologyVideoAutomationSettings()
+        {
+
+            var ss = await _userService.RetrieveUserSocialMediaAccessSessions(HttpContext);
+            var viewModel = new DarkPsychologyVideoAutomationSettingsModel
+            {
+                accounts = ss.OrderBy(a => a.CreatedAt).ToList(),
+            };
+            return View("DarkPsychologyVideoAutomationSettings", viewModel);
+        }
+
+
+        public async Task<IActionResult> RedditVideoAutomationSettings()
+        {
             // Define allowed extensions for fonts, videos, and audios
             string[] fontExtensions = { ".woff", ".woff2", ".ttf", ".otf" };
             string[] videoExtensions = { ".mp4", ".avi", ".mov", ".wmv", ".flv" };
@@ -77,18 +106,10 @@ namespace ContentMagican.Controllers
 
             // Define folders for fonts, videos, and audios
             string fontsFolder = Path.Combine(_env.WebRootPath, "MediaResources", "Fonts");
-            string videosFolder = Path.Combine(_env.WebRootPath, "MediaResources", "Videos");
+            string videosFolder = Path.Combine(_env.WebRootPath, "MediaResources", "Videos", "BackgroundDistraction");
             string audiosFolder = Path.Combine(_env.WebRootPath, "MediaResources", "Audios");
 
-            // Enumerate font files
-            var fonts = Directory.EnumerateFiles(fontsFolder)
-                                 .Where(file => fontExtensions.Contains(Path.GetExtension(file).ToLower()))
-                                 .Select(file => new FontDto
-                                 {
-                                     Name = Path.GetFileNameWithoutExtension(file),
-                                     Path = "/MediaResources/Fonts/" + Path.GetFileName(file)
-                                 })
-                                 .ToList();
+           
 
             // Enumerate video files
             var videos = Directory.EnumerateFiles(videosFolder)
@@ -96,7 +117,7 @@ namespace ContentMagican.Controllers
                                   .Select(file => new VideoResourceDto
                                   {
                                       Name = Path.GetFileNameWithoutExtension(file),
-                                      Path = "/MediaResources/Videos/" + Path.GetFileName(file)
+                                      Path = Path.GetFileName(file)
                                   })
                                   .ToList();
 
@@ -106,7 +127,7 @@ namespace ContentMagican.Controllers
                                   .Select(file => new AudioResourceDto
                                   {
                                       Name = Path.GetFileNameWithoutExtension(file),
-                                      Path = "/MediaResources/Audios/" + Path.GetFileName(file)
+                                      Path = Path.GetFileName(file)
                                   })
                                   .ToList();
 
@@ -115,7 +136,6 @@ namespace ContentMagican.Controllers
             var viewModel = new RedditVideoAutomationSettingsViewModel
             {
                 accounts = ss.OrderBy(a => a.CreatedAt).ToList(),
-                fonts = fonts,
                 video = videos,
                 audio = audios
             };
@@ -123,13 +143,14 @@ namespace ContentMagican.Controllers
             return View("RedditVideoAutomationSettings", viewModel);
         }
 
+
         [HttpPost]
         public async Task<IActionResult> CreateRedditVideoAutomationTask(
     string AccountToPublish,
     string TextStyle,
     string GameplayVideo,
     int VideosPerDay,
-    string taskDescription)
+    string taskDescription, string storyGenre)
 
         {
 
@@ -149,6 +170,44 @@ namespace ContentMagican.Controllers
  socialMediaAccesSessionId,
  VideosPerDay, // Added this parameter
 taskDescription,
+storyGenre,
+ HttpContext);
+                return RedirectToAction("Main", "Tasks");
+
+            }
+            else
+            {
+                return BadRequest("wrong id");
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> CreateDarkPsychologyVideoAutomationTask(
+    string AccountToPublish,
+    string TextStyle,
+    string GameplayVideo,
+    int VideosPerDay,
+    string taskDescription, string storyGenre)
+
+        {
+
+
+            // Validate videosPerDay
+            if (VideosPerDay < 1)
+            {
+                ModelState.AddModelError("videosPerDay", "Please select a valid number of videos per day.");
+            }
+
+
+            if (int.TryParse(AccountToPublish, out var socialMediaAccesSessionId))
+            {
+                await _taskService.CreateDarkPsychologyVideoAutomationTask(
+ TextStyle,
+ socialMediaAccesSessionId,
+ VideosPerDay, // Added this parameter
+taskDescription,
+null,
  HttpContext);
                 return RedirectToAction("Main", "Tasks");
 

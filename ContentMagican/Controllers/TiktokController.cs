@@ -79,7 +79,7 @@ namespace ContentMagican.Controllers
                 }
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction("ChangeTaskSettings", "Tasks");
+                return RedirectToAction("CreateTask", "Tasks");
 
             }
             catch (Exception ex)

@@ -1,0 +1,245 @@
+﻿@{
+
+    @model DarkPsychologyVideoAutomationSettingsModel
+
+
+    ViewData["Title"] = "Video Automation Settings";
+
+    // Example: A static list of libass-compatible fonts for demonstration
+    var libassFonts = new List<string>
+    {
+        "Arial",
+        "DejaVu Sans",
+        "DejaVu Serif",
+        "Times New Roman",
+        "Open Sans"
+    };
+}
+
+<h1 class="text-center mb-4">Dark Psychology Video Automation Settings</h1>
+
+<form asp-action="CreateDarkPsychologyVideoAutomationTask" method="post">
+    <!-- Account to Publish On -->
+    <div class="mb-3">
+        <label for="accountToPublish" class="form-label">Account to Publish On</label>
+        <select class="form-select" id="accountToPublish" name="AccountToPublish" required>
+            <option value="" disabled selected>Select an account</option>
+            @if (Model.accounts != null)
+            {
+                for (int i = 0; i < Model.accounts.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        <option value="@Model.accounts[i].id" selected="true">
+                            @Model.accounts[i].UserName
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="@Model.accounts[i].id">@Model.accounts[i].UserName</option>
+                    }
+                }
+            }
+            <option value="addAccount">+ Add Account</option>
+        </select>
+        <small class="form-text text-muted">
+            Choose an account to publish your videos.
+        </small>
+    </div>
+
+    <!-- Fieldset to disable/enable if no valid account is selected -->
+    <fieldset id="settingsFieldset">
+        <!-- Custom Dropdown for Text Style -->
+        <div class="mb-3" id="customFontContainer" style="transition: opacity 0.3s;">
+            <label class="form-label">Text Style</label>
+
+            <!-- Hidden input that actually holds the chosen font (for form submission) -->
+            <input type="hidden" id="textStyleHidden" name="TextStyle" />
+
+            <!-- The custom dropdown container -->
+            <div class="custom-dropdown" id="textStyleDropdown">
+                <div class="cd-selected" id="textStyleSelected">
+                    Select a font
+                </div>
+                <ul class="cd-list" id="textStyleList">
+                    @foreach (var font in libassFonts)
+                    {
+                        <li class="cd-item"
+                            style="
+                                font-family: '@font', sans-serif;
+                                color: #fff;
+                                text-shadow:
+                                    1px 1px 0 #000,
+                                    -1px 1px 0 #000,
+                                    1px -1px 0 #000,
+                                    -1px -1px 0 #000;
+                                        "
+                            data-value="@font">
+                            @font
+                        </li>
+                    }
+                </ul>
+            </div>
+            <small class="form-text text-muted">
+                Choose a libass-compatible font for your text.
+            </small>
+        </div>
+
+
+        <!-- Videos Per Day Dropdown -->
+        <div class="mb-3">
+            <label for="videosPerDay" class="form-label">Videos Per Day</label>
+            <select class="form-select" id="videosPerDay" name="VideosPerDay" required>
+                <option value="1">1 video/day</option>
+                <option value="2">2 videos/day</option>
+                <option value="3">3 videos/day</option>
+                <option value="4">4 videos/day</option>
+                <option value="5">5 videos/day</option>
+            </select>
+            <small class="form-text text-muted">
+                How many videos to publish per day.
+            </small>
+        </div>
+
+        <!-- Video Title Input -->
+        <div class="mb-3">
+            <label for="taskDescription" class="form-label">Task Description</label>
+            <input type="text" class="form-control" id="taskDescription"
+                   name="taskDescription"
+                   placeholder="Enter task description" required>
+        </div>
+    </fieldset>
+
+    <!-- Submit Button -->
+    <div class="d-flex justify-content-end mb-3">
+        <button type="submit" class="btn btn-primary" style="margin:5px; height:40px">
+            Next
+        </button>
+    </div>
+</form>
+
+<!-- Custom Dropdown CSS (inline for simplicity) -->
+<style>
+    .custom-dropdown {
+        position: relative;
+        width: 200px;
+        cursor: pointer;
+    }
+
+    /* The “selected” area (collapsed dropdown) */
+    .cd-selected {
+        background-color: #fff;
+        color: #000;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 8px;
+    }
+
+    /* The list of items (expanded dropdown) */
+    .cd-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        position: absolute;
+        top: 42px;
+        left: 0;
+        width: 100%;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        display: none;
+        z-index: 999;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    /* Items in the list */
+    .cd-item {
+        padding: 8px;
+        color: #000;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+        .cd-item:hover {
+            background-color: #f2f2f2;
+        }
+
+    .custom-dropdown.open .cd-list {
+        display: block;
+    }
+
+    /* OPTIONAL: A "disabled" style for the font container */
+    .disabled-area {
+        pointer-events: none; /* Prevent clicking */
+        opacity: 0.5; /* Visually indicate it's disabled */
+    }
+</style>
+
+<!-- Inline JS -->
+<script>
+    // Enable/disable the fieldset AND the custom font dropdown based on account selection
+    const accountSelect = document.getElementById('accountToPublish');
+    const fieldset = document.getElementById('settingsFieldset');
+    const customFontContainer = document.getElementById('customFontContainer');
+
+    function toggleFieldset() {
+        const selectedValue = accountSelect.value;
+
+        // If user chooses "addAccount", redirect
+        if (selectedValue === 'addAccount') {
+            window.location.href = '@Url.Action("AppAuth", "Tiktok")';
+            return;
+        }
+
+        // If valid account is chosen, enable. Otherwise, disable
+        if (selectedValue && selectedValue !== '') {
+            fieldset.removeAttribute('disabled');
+            // Also enable the custom font container
+            customFontContainer.classList.remove('disabled-area');
+        } else {
+            fieldset.setAttribute('disabled', true);
+            // Also disable the custom font container
+            customFontContainer.classList.add('disabled-area');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', toggleFieldset);
+    accountSelect.addEventListener('change', toggleFieldset);
+
+    // Custom Dropdown JS for Text Style
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropdown = document.getElementById('textStyleDropdown');
+        const selectedDiv = document.getElementById('textStyleSelected');
+        const list = document.getElementById('textStyleList');
+        const items = list.querySelectorAll('.cd-item');
+        const hiddenInput = document.getElementById('textStyleHidden');
+
+        selectedDiv.addEventListener('click', () => {
+            dropdown.classList.toggle('open');
+        });
+
+        items.forEach(item => {
+            item.addEventListener('click', () => {
+                const fontValue = item.getAttribute('data-value');
+                selectedDiv.textContent = fontValue;
+
+                // Copy font styles dynamically
+                selectedDiv.style.fontFamily = item.style.fontFamily;
+                selectedDiv.style.color = item.style.color;
+                selectedDiv.style.textShadow = item.style.textShadow;
+
+                hiddenInput.value = fontValue;
+                dropdown.classList.remove('open');
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
+    });
+</script>
+
+
