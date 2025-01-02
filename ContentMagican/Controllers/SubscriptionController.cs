@@ -29,5 +29,13 @@ namespace ContentMagican.Controllers
 
             return Redirect(url);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> CancelSubscription()
+        {
+            var user = await _userService.RetrieveUserInformation(HttpContext);
+            await _stripeService.CancelSubscriptionAtPeriodEnd(HttpContext);
+            return RedirectToAction("Main", "Dashboard");
+        }
     }
 }

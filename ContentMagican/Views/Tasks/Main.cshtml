@@ -1,7 +1,13 @@
 ﻿@using ContentMagican.Services
 @model TasksViewModel
+@inject TaskService taskService
 
 <div class="container mt-4">
+    <!-- Banner Section -->
+    <div class="alert alert-info text-center mb-4" role="alert">
+        <strong>You have @(Convert.ToString(await taskService.AvailableContentCreations(Context))) unused content creation available!</strong>
+    </div>
+
     <div class="text-center mb-4">
         <strong class="h2">Tasks</strong>
     </div>
@@ -34,8 +40,8 @@
                     {
                         <tr>
                             <td>@Model.Tasks[i].Description</td>
-                            <td>@(((TaskService.TaskSubTypes)Model.Tasks[i].Subtype).ToString().Replace('_',' '))</td>
-                            <td>@(((TaskService.TaskStatus)Model.Tasks[i].Status).ToString().Replace('_',' '))</td>
+                            <td>@(((TaskService.TaskSubTypes)Model.Tasks[i].Subtype).ToString().Replace('_', ' '))</td>
+                            <td>@(((TaskService.TaskStatus)Model.Tasks[i].Status).ToString().Replace('_', ' '))</td>
                             <td>@Model.Tasks[i].Created.ToString("yyyy-MM-dd")</td>
                             <td>@Model.Tasks[i].Id</td>
                             <td>
@@ -50,8 +56,6 @@
                                     }
                                 </div>
                             </td>
-
-
                             <td>
                                 <div class="dropdown" style="position: relative;">
                                     <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="actionDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -70,75 +74,3 @@
         </div>
     </div>
 </div>
-
-
-<style>
-    /* Add a subtle border to the container */
-    .border {
-        border: 1px solid #dee2e6 !important;
-        background-color: #fff; /* Optional: add a white background */
-    }
-
-    /* Remove borders from table cells and headers */
-    .table th,
-    .table td {
-        border: none !important;
-    }
-
-    /* Style table headers for better visibility */
-    .table thead th {
-        background-color: #f8f9fa !important; /* Light grey background */
-        color: #212529 !important; /* Dark text color */
-        font-weight: bold;
-    }
-
-    /* Optional: Add a subtle bottom border to rows */
-    .table tbody tr {
-        border-bottom: 1px solid #dee2e6;
-    }
-
-    /* Adjust table padding and font */
-    .table td, .table th {
-        padding: 0.75rem;
-        vertical-align: middle;
-        font-size: 0.9rem;
-    }
-
-    /* Optional: Add hover effect to rows */
-    .table tbody tr:hover {
-        background-color: #f8f9fa;
-    }
-
-    /* Adjust the dropdown menu to be on top */
-    .dropdown-menu {
-        position: absolute !important;
-        z-index: 1050;
-        top: 100%;
-        left: 0;
-    }
-
-    /* Ensure the table container does not clip content */
-    .table-responsive {
-        overflow: visible !important;
-    }
-
-    .rounded-card {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.5rem 1rem;
-        border-radius: 20px; /* Rounded edges */
-        background-color: #f8f9fa; /* Light grey background */
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    }
-
-    .icon-size {
-        width: 40px; /* Set desired width for the image */
-        height: 40px; /* Set desired height for the image */
-        object-fit: cover; /* Ensure the image fits within the dimensions */
-        border-radius: 50%; /* Makes the image circular */
-    }
-
-    .me-3 {
-        margin-right: 1rem; /* Space between the image and text */
-    }
-</style>

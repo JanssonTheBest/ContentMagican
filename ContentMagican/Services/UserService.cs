@@ -165,10 +165,38 @@ namespace ContentMagican.Services
         }
 
 
-        public async Task<IEnumerable<SocialMediaAccessSession>> RetrieveUserSocialMediaAccessSessions(HttpContext ctx)
+        public async Task<IEnumerable<SocialMediaAccessSession>> RetrieveActiveUserSocialMediaAccessSessions(HttpContext ctx)
         {
             var user = await RetrieveUserInformation(ctx);
-            return _applicationDbContext.SocialMediaAccessSessions.Where(a => a.userId == user.Id);
+            return _applicationDbContext.SocialMediaAccessSessions.Where(a => a.userId == user.Id && a.status == 0);
+        }
+
+        public async Task<int> RemoveSocialMediaAccessSession(int socialMediaAccessSessionId, HttpContext ctx)
+        {
+            var user = await RetrieveUserInformation(ctx);
+            var sessions = await RetrieveActiveUserSocialMediaAccessSessions(ctx);
+
+            // Materialize sessions if not already a list
+            var sessionList = sessions as List<SocialMediaAccessSession> ?? sessions.ToList();
+
+            foreach (var item in sessionList)
+            {
+                var tasks = _applicationDbContext.Task
+                    .Where(a => a.SocialMediaAccessSessionsId == item.id && a.Status == (int)TaskService.TaskStatus.active)
+                    .ToList();
+
+                if (tasks.Any())
+                {
+                    foreach (var task in tasks)
+                    {
+                        task.Status = (int)TaskService.TaskStatus.deleted;
+                    }
+                }
+                item.status = 1;
+            }
+
+            await _applicationDbContext.SaveChangesAsync();
+            return socialMediaAccessSessionId;
         }
 
 

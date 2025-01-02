@@ -59,7 +59,7 @@ namespace ContentMagican.Controllers
                     return BadRequest("A conjurecontent-user is already associated with the account provided.\n Login to the relevant conjurecontent-account or clear cookies in your browser, and try adding another user.");
                 }
 
-                if (entity.Any())
+                if (entity.Any() && entity.First().status == 0)
                 {
                     var dto = entity.First();
                     dto.date_expires = socialMediaAccesSession.date_expires;
@@ -79,7 +79,7 @@ namespace ContentMagican.Controllers
                 }
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction("CreateTask", "Tasks");
+                return RedirectToAction("Main", "Dashboard");
 
             }
             catch (Exception ex)

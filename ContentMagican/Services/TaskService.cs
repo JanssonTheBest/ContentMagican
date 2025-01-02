@@ -11,11 +11,13 @@ namespace ContentMagican.Services
         ApplicationDbContext _applicationDbContext;
         UserService _userService;
         FFmpegService _ffmpegService;
-        public TaskService(ApplicationDbContext applicationDbContext, UserService userService, FFmpegService ffmpegService)
+        StripeService _stripeService;
+        public TaskService(ApplicationDbContext applicationDbContext, UserService userService, FFmpegService ffmpegService, StripeService stripeService)
         {
             _applicationDbContext = applicationDbContext;
             _userService = userService;
             _ffmpegService = ffmpegService;
+            _stripeService = stripeService;
         }
 
         public static List<TaskVideoAutomationFrontendRepresentation> videoAutomationAlternatives = new()
@@ -163,7 +165,7 @@ namespace ContentMagican.Services
 
         public async Task<SocialMediaAccessSession> GetSocialMediaAccessSession(int socialMediaAccessSessionId)
         {
-            var session = _applicationDbContext.SocialMediaAccessSessions.Where(a => a.id == socialMediaAccessSessionId).FirstOrDefault();
+            var session = _applicationDbContext.SocialMediaAccessSessions.Where(a => a.id == socialMediaAccessSessionId && a.status == 0).FirstOrDefault();
             if (session == default)
             {
                 return null;
@@ -192,6 +194,38 @@ namespace ContentMagican.Services
             return _applicationDbContext.VideoAutomation.Where(a => a.TaskId == taskId).FirstOrDefault();
         }
 
+        public async Task<int> AvailableContentCreations(HttpContext ctx)
+        {
+            var tasks = await GetAllActiveTasks();
+            var videoAutomations = _applicationDbContext.VideoAutomation.Where(a => tasks.Select(b => b.Id).Contains(a.TaskId)).ToList();
+
+            int sum = 0;
+
+            foreach (var item in videoAutomations)
+            {
+                sum += item.Interval;
+            }
+
+            var product = await _stripeService.GetRelevantProductFromUser(ctx);
+            sum =  Convert.ToInt32(product.Metadata.ContainsKey("ContentCreationsPerDay")) - sum;
+            if(sum < 0)
+            {
+                return 0;
+            }
+
+            return sum;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is TaskService service &&
+                   EqualityComparer<StripeService>.Default.Equals(_stripeService, service._stripeService);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_stripeService);
+        }
     }
 
     public class TaskVideoAutomationFrontendRepresentation()

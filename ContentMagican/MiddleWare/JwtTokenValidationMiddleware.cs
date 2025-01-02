@@ -17,15 +17,15 @@ namespace ContentMagican.MiddleWare
 
         public async Task InvokeAsync(HttpContext context)
         {
-//#if DEBUG
-//            if (context.Request.Host.Host.Contains("ngrok") &&
-//               context.Request.Path.Equals("/Tasks/ChangeTaskSettings", StringComparison.OrdinalIgnoreCase))
-//            {
-//                var localhostUrl = $"https://localhost:7088{context.Request.Path}";
-//                context.Response.Redirect(localhostUrl);
-//                return;
-//            }
-//#endif
+            //#if DEBUG
+            //            if (context.Request.Host.Host.Contains("ngrok") &&
+            //               context.Request.Path.Equals("/Tasks/ChangeTaskSettings", StringComparison.OrdinalIgnoreCase))
+            //            {
+            //                var localhostUrl = $"https://localhost:7088{context.Request.Path}";
+            //                context.Response.Redirect(localhostUrl);
+            //                return;
+            //            }
+            //#endif
 
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -41,13 +41,44 @@ namespace ContentMagican.MiddleWare
 
                         for (int i = 0; i < principal.Claims.Count(); i++)
                         {
-                            context.Response.Cookies.Append(i.ToString(),Convert.ToBase64String(Encoding.UTF8.GetBytes(principal.Claims.ElementAt(i).Value)));
+                            context.Response.Cookies.Append(i.ToString(), Convert.ToBase64String(Encoding.UTF8.GetBytes(principal.Claims.ElementAt(i).Value)));
                         }
                     }
                 }
 
                 if (hasValidToken)
                 {
+
+                    if (!context.Request.Path.StartsWithSegments("/Account/Logout"))
+                    {
+                        try
+                        {
+                            var user = await userService.RetrieveUserInformation(context);
+                            var stripeService = scope.ServiceProvider.GetRequiredService<StripeService>();
+                            var subscription = await stripeService.GetRelevantProductFromUser(context);
+                            if (!subscription.Active)
+                            {
+                                // Redirect authenticated users away from /Account paths
+                                if (!context.Request.Path.StartsWithSegments("/Plan/Main") && !context.Request.Path.StartsWithSegments("/Subscription"))
+                                {
+                                    context.Response.Redirect("/Plan/Main");
+                                    return;
+
+                                }
+                            }
+                            else
+                            {
+                                await _next(context);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            context.Response.Redirect("/Plan/Main");
+                            return;
+                        }
+                    }
+
+
                     if (context.Request.Path.StartsWithSegments("/Account") && !context.Request.Path.StartsWithSegments("/Account/Logout"))
                     {
                         // Redirect authenticated users away from /Account paths
@@ -63,8 +94,8 @@ namespace ContentMagican.MiddleWare
                 }
                 else
                 {
-                    if (context.Request.Path.StartsWithSegments("/Account") 
-                        || context.Request.Path.StartsWithSegments("/Info") 
+                    if (context.Request.Path.StartsWithSegments("/Account")
+                        || context.Request.Path.StartsWithSegments("/Info")
                         || context.Request.Path.StartsWithSegments("/tiktokXsOLE8u4HYO2pcOTRIhcNtrlkkKW6ulr.txt")
                         || context.Request.Path.StartsWithSegments("/Stripewebhook")
                         || context.Request.Path.StartsWithSegments("/Tiktok")

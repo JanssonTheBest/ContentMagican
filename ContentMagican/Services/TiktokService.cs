@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Web;
@@ -76,7 +77,7 @@ namespace ContentMagican.Services
                 _logger.LogInformation("Attempting to retrieve user info.");
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-                string fields = "display_name,open_id,avatar_url";
+                string fields = "display_name,open_id,avatar_url,follower_count,following_count,likes_count,";
                 var response = await _httpClient.GetAsync($"https://open.tiktokapis.com/v2/user/info/?fields={fields}");
 
                 _logger.LogInformation($"User info response status: {response.StatusCode}");
@@ -136,106 +137,6 @@ namespace ContentMagican.Services
             }
         }
 
-        /// <summary>
-        /// Step 1: /v2/post/publish/video/init/
-        /// 
-        /// According to TikTok's doc:
-        /// - If video < 5 MB => chunk_size = video_size => total_chunk_count=1
-        /// - Otherwise => chunk_size can be 5-64 MB, 
-        ///   total_chunk_count = floor(video_size / chunk_size).
-        /// </summary>
-        //   private async Task<InitUploadResponse> InitializeUploadAsync(
-        //string accessToken,
-        //string videoFilePath,
-        //string title)
-        //   {
-        //       try
-        //       {
-        //           _logger.LogInformation("Initializing direct video upload for posting.");
-
-        //           _httpClient.DefaultRequestHeaders.Authorization =
-        //               new AuthenticationHeaderValue("Bearer", accessToken);
-        //           _httpClient.DefaultRequestHeaders.Accept.Add(
-        //               new MediaTypeWithQualityHeaderValue("application/json"));
-
-        //           FileInfo fileInfo = new FileInfo(videoFilePath);
-        //           long videoSize = fileInfo.Length;
-
-        //           // Decide chunkSize
-        //           long minChunk = 5L * 1024L * 1024L;  // 5 MB
-        //           long maxChunk = 64L * 1024L * 1024L; // 64 MB
-
-        //           long chunkSize;
-        //           if (videoSize < minChunk)
-        //           {
-        //               // Entire file < 5 MB => 1 chunk
-        //               chunkSize = videoSize;
-        //           }
-        //           else
-        //           {
-        //               // E.g. 10 MB, within 5 ~ 64 MB range
-        //               chunkSize = Math.Min(10L * 1024L * 1024L, maxChunk);
-        //           }
-
-        //           // Calculate how many full-size chunks, plus leftover remainder
-        //           long count = videoSize / chunkSize;  // integer division => floor
-        //           long leftover = videoSize % chunkSize;
-
-        //           // We do NOT forcibly do +1. Instead, the final chunk can be "chunkSize + leftover"
-        //           // if leftover > 0. But the total "chunk count" from TikTok’s perspective is 'count'.
-        //           // If leftover == 0 => exactly 'count' chunks. If leftover > 0 => also 'count' chunks,
-        //           // but the last chunk is bigger than chunkSize.
-        //           // If chunkSize > videoSize => fallback
-        //           if (count == 0)
-        //           {
-        //               count = 1;       // entire file in 1 chunk
-        //               chunkSize = videoSize;
-        //               leftover = 0;
-        //           }
-
-        //           // This is the tricky part: TikTok wants total_chunk_count = floor(...) for the /init/ call
-        //           // so we send 'count' as the total_chunk_count
-        //           int totalChunkCount = (int)count;
-
-        //           var requestBody = new
-        //           {
-        //               post_info = new
-        //               {
-        //                   title = title,
-        //                   privacy_level = "SELF_ONLY"
-        //               },
-        //               source_info = new
-        //               {
-        //                   source = "FILE_UPLOAD",
-        //                   video_size = videoSize,
-        //                   chunk_size = chunkSize,
-        //                   total_chunk_count = totalChunkCount
-        //               }
-        //           };
-
-        //           var response = await _httpClient.PostAsJsonAsync(
-        //               "https://open.tiktokapis.com/v2/post/publish/video/init/",
-        //               requestBody
-        //           );
-
-        //           _logger.LogInformation($"Direct post initialization response status: {response.StatusCode}");
-        //           string responseContent = await response.Content.ReadAsStringAsync();
-        //           _logger.LogDebug($"Direct post initialization response body: {responseContent}");
-
-        //           if (!response.IsSuccessStatusCode)
-        //           {
-        //               _logger.LogError($"Failed to initialize direct post: {responseContent}");
-        //               throw new Exception($"Initialization failed: {responseContent}");
-        //           }
-
-        //           return JsonSerializer.Deserialize<InitUploadResponse>(responseContent);
-        //       }
-        //       catch (Exception ex)
-        //       {
-        //           _logger.LogError(ex, "Exception during direct post initialization.");
-        //           throw;
-        //       }
-        //   }
 
         private async Task<InitUploadResponse> InitializeUploadAsync(
       string accessToken,
@@ -346,127 +247,6 @@ namespace ContentMagican.Services
             }
         }
 
-
-
-
-
-        /// <summary>
-        /// Step 2: PUT chunks to uploadUrl. 
-        /// The final chunk can exceed chunk_size if leftover bytes exist.
-        /// </summary>
-        //private async Task<bool> UploadVideoFileAsync(string uploadUrl, string videoFilePath)
-        //{
-        //    try
-        //    {
-        //        _logger.LogInformation("Uploading video file.");
-
-        //        FileInfo fileInfo = new FileInfo(videoFilePath);
-        //        long fileSize = fileInfo.Length;
-
-        //        // Same chunk sizing logic
-        //        long minChunk = 5L * 1024L * 1024L;   // 5 MB
-        //        long maxChunk = 64L * 1024L * 1024L;  // 64 MB
-
-        //        long chunkSize;
-        //        if (fileSize < minChunk)
-        //        {
-        //            chunkSize = fileSize;
-        //        }
-        //        else
-        //        {
-        //            chunkSize = Math.Min(10L * 1024L * 1024L, maxChunk);
-        //        }
-
-        //        long count = fileSize / chunkSize;   // floor
-        //        long leftover = fileSize % chunkSize;
-
-        //        if (count == 0)
-        //        {
-        //            count = 1;
-        //            chunkSize = fileSize;
-        //            leftover = 0;
-        //        }
-
-        //        // We'll do 'count' iterations
-        //        // In the final iteration, if leftover > 0, we read chunkSize + leftover
-        //        int totalChunkCount = (int)count;
-
-        //        using var localClient = new HttpClient();
-        //        using var fileStream = new FileStream(videoFilePath, FileMode.Open, FileAccess.Read);
-
-        //        long totalBytesRead = 0;
-
-        //        for (int chunkIndex = 1; chunkIndex <= totalChunkCount; chunkIndex++)
-        //        {
-        //            // For chunk 1..(count-1), just read 'chunkSize'
-        //            // For chunk == count (the final chunk), if leftover>0 => read chunkSize+leftover
-        //            long normalChunk = chunkSize;
-        //            // Are we on the final chunk?
-        //            bool isFinalChunk = (chunkIndex == totalChunkCount);
-
-        //            if (isFinalChunk && leftover > 0)
-        //            {
-        //                // final chunk size = chunkSize + leftover
-        //                normalChunk += leftover;
-        //            }
-
-        //            long bytesLeft = fileSize - totalBytesRead;
-        //            // If by some chance there's no more data, break
-        //            if (bytesLeft <= 0)
-        //            {
-        //                break;
-        //            }
-
-        //            // We can't read more than what's actually left
-        //            long thisChunkSize = Math.Min(bytesLeft, normalChunk);
-
-        //            // Allocate buffer
-        //            byte[] buffer = new byte[thisChunkSize];
-
-        //            int bytesRead = await fileStream.ReadAsync(buffer, 0, (int)thisChunkSize);
-        //            if (bytesRead != thisChunkSize)
-        //            {
-        //                throw new InvalidOperationException($"Did not read {thisChunkSize} bytes from file.");
-        //            }
-
-        //            long startByte = totalBytesRead;
-        //            long endByte = totalBytesRead + bytesRead - 1;
-
-        //            using var content = new ByteArrayContent(buffer, 0, bytesRead);
-        //            content.Headers.ContentType = new MediaTypeHeaderValue("video/mp4");
-        //            content.Headers.ContentRange = new ContentRangeHeaderValue(startByte, endByte, fileSize)
-        //            {
-        //                Unit = "bytes"
-        //            };
-
-        //            var response = await localClient.PutAsync(uploadUrl, content);
-        //            string responseBody = await response.Content.ReadAsStringAsync();
-
-        //            if (!response.IsSuccessStatusCode)
-        //            {
-        //                _logger.LogError(
-        //                    $"Failed to upload chunk {chunkIndex}/{totalChunkCount}. " +
-        //                    $"StatusCode={response.StatusCode}, Body={responseBody}"
-        //                );
-        //                return false;
-        //            }
-
-        //            totalBytesRead += bytesRead;
-
-        //            _logger.LogInformation(
-        //                $"Chunk {chunkIndex}/{totalChunkCount} uploaded successfully. {bytesRead} bytes sent."
-        //            );
-        //        }
-
-        //        _logger.LogInformation("All chunks uploaded successfully.");
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Exception during video file upload.");
-        //        return false;
-        //    }
-        //}
 
         private async Task<bool> UploadVideoFileAsync(string uploadUrl, string videoFilePath)
         {
@@ -594,45 +374,256 @@ namespace ContentMagican.Services
 
 
 
-
-        // (OPTIONAL) Step 3: if needed
-        /*
-        private async Task CompleteUploadAsync(string accessToken, string publishId)
+        public async Task<VideoStatsDto> GetVideoStatsAsync(string accessToken, string videoId)
         {
             try
             {
-                _logger.LogInformation("Completing the video upload.");
+                _logger.LogInformation("Retrieving video statistics for video ID: {videoId}", videoId);
+
                 _httpClient.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", accessToken);
 
-                var requestBody = new { publish_id = publishId };
-                var response = await _httpClient.PostAsJsonAsync(
-                    "https://open.tiktokapis.com/v2/post/publish/video/complete/",
-                    requestBody
-                );
+                // NOTE: TikTok docs no longer show a direct "GET video stats" endpoint for v2,
+                //       so if this is a legacy/older endpoint, you can keep it, or else
+                //       you'd use the /v2/video/query/ endpoint to fetch a single ID’s stats.
+                var response = await _httpClient.GetAsync($"https://open.tiktokapis.com/v2/video/stats/?video_id={videoId}");
 
-                var responseContent = await response.Content.ReadAsStringAsync();
-                _logger.LogInformation($"Complete call response: {response.StatusCode}, body: {responseContent}");
+                _logger.LogInformation("Video stats response status: {statusCode}", response.StatusCode);
+                var responseData = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug("Video stats response: {responseData}", responseData);
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Failed to complete the upload. {responseContent}");
-                }
-
-                _logger.LogInformation("Video upload completed successfully.");
+                response.EnsureSuccessStatusCode();
+                return JsonSerializer.Deserialize<VideoStatsDto>(responseData);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception during finalizing the upload.");
+                _logger.LogError(ex, "Exception while retrieving TikTok video statistics.");
                 throw;
             }
         }
-        */
+
+        /// <summary>
+        ///  Get stats for **all** videos posted in the last 7 days (including current like_count, view_count, etc.).
+        /// </summary>
+        public async Task<List<VideoStatsDto>> GetAllVideoStatsAsync(string accessToken)
+        {
+            try
+            {
+                _logger.LogInformation("Retrieving all video statistics from the last 7 days...");
+
+                _httpClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", accessToken);
+
+                var videoStatsList = new List<VideoStatsDto>();
+
+                // For pagination: the cursor is a long (UTC epoch in ms) from TikTok.
+                // We'll pass it in the request body, and read back from the response.
+                long? cursor = null;
+                bool hasMore = true;
+
+                // We'll stop either when TikTok indicates "no more pages" (has_more == false)
+                // or once all the videos we get are older than 7 days.
+                while (hasMore)
+                {
+                    // Prepare the request body for the POST /v2/video/list/ endpoint
+                    var requestBody = new
+                    {
+                        cursor = cursor,     // The last page's cursor (may be null first time)
+                        max_count = 20       // The maximum number of videos per page (<= 20)
+                    };
+
+                    // We also add desired fields as per TikTok docs:
+                    // e.g., "?fields=id,create_time,like_count,comment_count,share_count,view_count"
+                    var url = "https://open.tiktokapis.com/v2/video/list/?fields=id,create_time,like_count,comment_count,share_count,view_count";
+
+                    var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+                    var response = await _httpClient.PostAsync(url, content);
+                    response.EnsureSuccessStatusCode();
+
+                    var responseData = await response.Content.ReadAsStringAsync();
+                    var videoListResponse = JsonSerializer.Deserialize<VideoListResponse>(responseData);
+
+                    if (videoListResponse?.Data?.Videos == null || !videoListResponse.Data.Videos.Any())
+                    {
+                        _logger.LogWarning("No videos found in this page of data.");
+                        break;
+                    }
+
+                    // Filter to only keep videos posted within the last 7 days:
+                    var oneWeekAgoUnix = DateTimeOffset.UtcNow.AddDays(-7).ToUnixTimeSeconds();
+
+                    // Because create_time is in seconds, compare directly with oneWeekAgoUnix
+                    var recentVideos = videoListResponse.Data.Videos
+                        .Where(v => v.CreateTime >= oneWeekAgoUnix)
+                        .ToList();
+
+                    // If none of the videos in this batch are from last 7 days, break.
+                    if (!recentVideos.Any())
+                    {
+                        _logger.LogInformation("All videos in this page are older than 7 days.");
+                        break;
+                    }
+
+                    // 2) Query the details (including like/view counts) for these recent videos
+                    var videoIds = recentVideos.Select(v => v.VideoId).ToList();
+                    var videoDetailsResponse = await QueryVideoDetailsAsync(accessToken, videoIds);
+
+                    if (videoDetailsResponse?.Data == null || !videoDetailsResponse.Data.Any())
+                    {
+                        _logger.LogWarning("No video details returned for the recent videos.");
+                        break;
+                    }
+
+                    videoStatsList.AddRange(videoDetailsResponse.Data);
+
+                    // Pagination: update cursor & hasMore from the current response
+                    // The TikTok docs say "has_more" is in the top-level data object
+                    // to indicate if there's another page. If "has_more" is false,
+                    // you can stop. If it's true, use "cursor" to keep paginating.
+                    cursor = videoListResponse.Data.Cursor;    // e.g. 1643332803000
+                    hasMore = videoListResponse.Data.HasMore;
+                }
+
+                _logger.LogInformation("Retrieved statistics for all videos (posted in last 7 days).");
+                return videoStatsList;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception while retrieving all video statistics.");
+                throw;
+            }
+        }
+
+        /// <summary>
+        ///  Calls TikTok’s /v2/video/query/ to fetch the details of up to 20 video IDs.
+        ///  This returns current like_count, view_count, share_count, etc.
+        /// </summary>
+        private async Task<VideoDetailsResponse> QueryVideoDetailsAsync(string accessToken, List<string> videoIds)
+        {
+            // Per TikTok docs, we do a POST to:
+            // https://open.tiktokapis.com/v2/video/query/?fields=id,create_time,...
+            // And in the body:
+            // {
+            //   "filters": {
+            //       "video_ids": ["id1","id2",...]
+            //   }
+            // }
+            // You can specify any fields you want in the query string.
+
+            var url = "https://open.tiktokapis.com/v2/video/query/?fields=id,like_count,comment_count,share_count,view_count,duration";
+
+            var bodyObject = new
+            {
+                filters = new
+                {
+                    video_ids = videoIds
+                }
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(bodyObject), Encoding.UTF8, "application/json");
+
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", accessToken);
+
+            var response = await _httpClient.PostAsync(url, content);
+            response.EnsureSuccessStatusCode();
+
+            var responseData = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<VideoDetailsResponse>(responseData);
+        }
+
+
     }
 
-    // ------------------------------------------------------------------------
-    // Below are the same classes you had; your TikTokUser class is UNTOUCHED
-    // ------------------------------------------------------------------------
+
+    public class VideoListResponse
+    {
+        [JsonPropertyName("data")]
+        public VideoListData Data { get; set; }
+
+        [JsonPropertyName("error")]
+        public Error Error { get; set; }
+    }
+
+    public class VideoListData
+    {
+        [JsonPropertyName("videos")]
+        public List<VideoInfo> Videos { get; set; }
+
+        [JsonPropertyName("cursor")]
+        public long? Cursor { get; set; }
+
+        [JsonPropertyName("has_more")]
+        public bool HasMore { get; set; }
+    }
+
+    public class VideoInfo
+    {
+        [JsonPropertyName("id")]
+        public string VideoId { get; set; }
+
+        // Create time is a Unix epoch (seconds) for v2 (per docs).
+        [JsonPropertyName("create_time")]
+        public long CreateTime { get; set; }
+
+        // If you request these in ?fields=like_count,comment_count, etc. then you can also
+        // deserialize them here. For simplicity, we usually rely on QueryVideoDetailsAsync though.
+        [JsonPropertyName("like_count")]
+        public int? LikeCount { get; set; }
+
+        [JsonPropertyName("view_count")]
+        public long? ViewCount { get; set; }
+
+        // etc.
+    }
+
+    public class VideoDetailsResponse
+    {
+        [JsonPropertyName("data")]
+        public List<VideoStatsDto> Data { get; set; }
+
+        [JsonPropertyName("error")]
+        public Error Error { get; set; }
+    }
+
+    public class VideoStatsDto
+    {
+        [JsonPropertyName("id")]
+        public string VideoId { get; set; }
+
+        [JsonPropertyName("like_count")]
+        public int LikeCount { get; set; }
+
+        [JsonPropertyName("view_count")]
+        public long ViewCount { get; set; }
+
+        [JsonPropertyName("comment_count")]
+        public int CommentCount { get; set; }
+
+        [JsonPropertyName("share_count")]
+        public int ShareCount { get; set; }
+
+        // Add any other relevant fields you request
+    }
+
+
+    public class UserStatsDto
+    {
+        [JsonPropertyName("data")]
+        public UserStatsData Data { get; set; }
+
+        [JsonPropertyName("error")]
+        public Error Error { get; set; }
+    }
+
+    public class UserStatsData
+    {
+        [JsonPropertyName("follower_count")]
+        public int FollowerCount { get; set; }
+
+        [JsonPropertyName("following_count")]
+        public int FollowingCount { get; set; }
+    }
 
     public class InitUploadResponse
     {
@@ -690,6 +681,15 @@ namespace ContentMagican.Services
 
         [JsonPropertyName("avatar_url")]
         public string AvatarUrl { get; set; }
+
+        [JsonPropertyName("follower_count")]
+        public long FollowerCount { get; set; }
+
+        [JsonPropertyName("following_count")]
+        public long FollowingCount { get; set; }
+
+        [JsonPropertyName("likes_count")]
+        public long LikesCount { get; set; }
     }
 
     public class Error

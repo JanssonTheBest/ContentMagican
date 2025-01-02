@@ -40,7 +40,7 @@
                     }
                 }
             }
-            <option value="addAccount">+ Add Account</option>
+            <option value="addAccount">+ Add Account (Dashboard -> Connect New Platforms)</option>
         </select>
         <small class="form-text text-muted">
             Choose an account to publish your videos.
@@ -188,7 +188,7 @@
 
         // If user chooses "addAccount", redirect
         if (selectedValue === 'addAccount') {
-            window.location.href = '@Url.Action("AppAuth", "Tiktok")';
+            window.location.href = '@Url.Action("Main", "Dashboard")';
             return;
         }
 

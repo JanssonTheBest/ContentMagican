@@ -88,7 +88,7 @@ namespace ContentMagican.Controllers
         public async Task<IActionResult> DarkPsychologyVideoAutomationSettings()
         {
 
-            var ss = await _userService.RetrieveUserSocialMediaAccessSessions(HttpContext);
+            var ss = await _userService.RetrieveActiveUserSocialMediaAccessSessions(HttpContext);
             var viewModel = new DarkPsychologyVideoAutomationSettingsModel
             {
                 accounts = ss.OrderBy(a => a.CreatedAt).ToList(),
@@ -132,7 +132,7 @@ namespace ContentMagican.Controllers
                                   .ToList();
 
             // Create the ViewModel with fonts, videos, and audios
-            var ss = await _userService.RetrieveUserSocialMediaAccessSessions(HttpContext);
+            var ss = await _userService.RetrieveActiveUserSocialMediaAccessSessions(HttpContext);
             var viewModel = new RedditVideoAutomationSettingsViewModel
             {
                 accounts = ss.OrderBy(a => a.CreatedAt).ToList(),
@@ -153,7 +153,7 @@ namespace ContentMagican.Controllers
     string taskDescription, string storyGenre)
 
         {
-
+            
 
             // Validate videosPerDay
             if (VideosPerDay < 1)
@@ -161,6 +161,12 @@ namespace ContentMagican.Controllers
                 ModelState.AddModelError("videosPerDay", "Please select a valid number of videos per day.");
             }
 
+            var contentcreations = await _taskService.AvailableContentCreations(HttpContext);
+
+            if(contentcreations < VideosPerDay)
+            {
+                return BadRequest("You have used more content creations than available for your current plan, when creating a task ensure that videos/day is within the content-creations amount available.");
+            }
 
             if (int.TryParse(AccountToPublish, out var socialMediaAccesSessionId))
             {
@@ -197,6 +203,13 @@ storyGenre,
             if (VideosPerDay < 1)
             {
                 ModelState.AddModelError("videosPerDay", "Please select a valid number of videos per day.");
+            }
+
+            var contentcreations = await _taskService.AvailableContentCreations(HttpContext);
+
+            if (contentcreations < VideosPerDay)
+            {
+                return BadRequest("You have used more content creations than available for your current plan, when creating a task ensure that videos/day is within the content-creations amount available.");
             }
 
 

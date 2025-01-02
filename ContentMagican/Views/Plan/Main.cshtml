@@ -2,41 +2,82 @@
 @using ContentMagican.Services
 @inject UserService userService;
 @inject StripeRepository stripeRepository;
+@inject StripeService stripeService;
 
-<div class="container mt-4">
-    <div class="text-center mb-4">
-        <strong class="h2">Plans</strong>
+@{
+    Stripe.Product userProduct = await stripeService.GetRelevantProductFromUser(Context);
+}
+
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h2 class="font-weight-bold">Our Plans</h2>
+        <p class="text-muted">Choose the plan that suits your needs.</p>
     </div>
 
     <div class="row">
-        <!-- Free Plan Card -->
-        <div class="col-12 col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 text-center p-3">
-                <strong class="mb-2">Free</strong>
-                <p>Content creations/day: 1</p>
-                <p>Active task limit: 1</p>
-                <p>Resource priority: Low</p>
-                <div class="d-flex justify-content-center align-items-center" style="min-height:100px;">
-                    <a class="btn btn-outline-primary w-75 mt-3">Get Started</a>
-                </div>
-                <small class="text-muted">Requires account activation</small>
-            </div>
-        </div>
-
-        @foreach (var product in await stripeRepository.GetAllProducts())
+        @try
         {
-            <div class="col-12 col-md-6 col-lg-4 mb-4">
-                <div class="card h-100 text-center p-3">
-                    <strong class="mb-2">@product.Name</strong>
-                    <p>Content creations/day: 1</p>
-                    <p>Active task limit: 1</p>
-                    <p>Resource priority: Low</p>
-                    <div class="d-flex justify-content-center align-items-center" style="min-height:100px;">
-                        <a href="@Url.Action("Subscribe","Subscription", new{userId = (await userService.RetrieveUserInformation(Context)).Id,subscriptionId = product.Id})" class="btn btn-outline-primary w-75 mt-3">Get Started</a>
+            @foreach (var product in (await stripeRepository.GetAllProducts()).Where(a => a.Active))
+            {
+                <div class="col-12 col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <h5 class="card-title mb-3 font-weight-bold">@product.Name</h5>
+                            <ul class="list-unstyled mb-4">
+                                <li><strong>Content Creations/Day:</strong> @product.Metadata["ContentCreationsPerDay"]</li>
+                                <li><strong>Watermark:</strong> @product.Metadata["RequiresWatermark"]</li>
+                            </ul>
+
+                            @if (userProduct.Id == product.Id)
+                            {
+                                <div class="alert alert-primary d-flex flex-column align-items-center p-3">
+                                    <p class="mb-2 font-weight-bold">Active Subscription</p>
+
+                                    @if (Convert.ToBoolean(userProduct.Metadata["CancelAtPeriodEnd"]))
+                                    {
+                                        <p class="text-danger mb-0">This subscription is canceled but valid until the end of the billing period.</p>
+                                    }
+                                    else
+                                    {
+                                        <a href="@Url.Action("CancelSubscription", "Subscription")" class="btn btn-danger mt-2">Cancel Subscription</a>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("Subscribe", "Subscription", new { userId = (await userService.RetrieveUserInformation(Context)).Id, subscriptionId = product.Id })" class="btn btn-primary btn-block">Subscribe for @(product.DefaultPrice.UnitAmountDecimal / 100)$ / month</a>
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
         }
-
+        catch (Exception e)
+        {
+            <div class="col-12">
+                <div class="alert alert-danger text-center">An error occurred while loading the plans. Please try again later.</div>
+            </div>
+            Console.WriteLine(e.Message);
+        }
     </div>
 </div>
+
+<style>
+    .card {
+        border-radius: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+    .btn {
+        border-radius: 50px;
+    }
+
+    .alert {
+        border-radius: 12px;
+    }
+</style>

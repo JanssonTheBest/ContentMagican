@@ -19,11 +19,62 @@ namespace ContentMagican.Services
         }
 
 
-        public async Task<Product> GetRelevantProductFromUser(long id, HttpContext ctx)
+        //public async Task<Product> GetRelevantProductFromUser(HttpContext ctx)
+        //{
+        //    CustomerService customerService = new CustomerService();
+        //    var user = await _userService.RetrieveUserInformation(ctx);
+
+        //    if (string.IsNullOrEmpty(user.CustomerId))
+        //    {
+        //        return new Product
+        //        {
+        //            Name = "Free Tier",
+        //        };
+        //    }
+
+        //    var customer = await customerService.GetAsync(user.CustomerId);
+        //    var subscriptionService = new SubscriptionService();
+        //    var productService = new ProductService();
+
+        //    // Retrieve all active subscriptions for the customer
+        //    var activeSubscriptions = await subscriptionService.ListAsync(new SubscriptionListOptions
+        //    {
+        //        Customer = customer.Id,
+        //        Status = "active",
+        //    });
+
+        //    var subscription = activeSubscriptions.FirstOrDefault();
+
+        //    if (subscription == default)
+        //    {
+        //        return new Product
+        //        {
+        //            Name = "free tier",
+        //        };
+        //    }
+
+        //    var subscriptionItem = subscription.Items.Data.FirstOrDefault();
+        //    if (subscriptionItem != null)
+        //    {
+        //        var product = await productService.GetAsync(subscriptionItem.Price.ProductId);
+        //        product.Metadata.Add("CancelAtPeriodEnd", Convert.ToString(subscription.CancelAtPeriodEnd));
+        //        return product;
+        //    }
+
+        //    return new Product
+        //    {
+        //        Name = "Free Tier",
+        //    };
+        //}
+
+
+        public async Task<Product> GetRelevantProductFromUser(HttpContext ctx)
         {
+            // 1. Retrieve user data
             CustomerService customerService = new CustomerService();
             var user = await _userService.RetrieveUserInformation(ctx);
 
+            // If no associated customer, return Free Tier
             if (string.IsNullOrEmpty(user.CustomerId))
             {
                 return new Product
@@ -32,34 +83,48 @@ namespace ContentMagican.Services
                 };
             }
 
+            // 2. Retrieve the Stripe customer by CustomerId
             var customer = await customerService.GetAsync(user.CustomerId);
             var subscriptionService = new SubscriptionService();
             var productService = new ProductService();
 
-            // Retrieve all active subscriptions for the customer
+            // 3. Retrieve all active subscriptions for the customer
+            //    (active = not canceled yet, though can still be scheduled to cancel)
             var activeSubscriptions = await subscriptionService.ListAsync(new SubscriptionListOptions
             {
                 Customer = customer.Id,
                 Status = "active",
             });
 
-            var subscription = activeSubscriptions.FirstOrDefault();
+            // 4. Among active subscriptions, prioritize the ones NOT scheduled to cancel (CancelAtPeriodEnd == false).
+            //    Then, if none exist, pick a subscription that IS scheduled to cancel (CancelAtPeriodEnd == true).
+            var subscription = activeSubscriptions
+                .Data
+                .OrderBy(sub => sub.CancelAtPeriodEnd) // false (0) before true (1)
+                .FirstOrDefault();
 
+            // 5. If no active subscriptions at all, return Free Tier
             if (subscription == default)
             {
                 return new Product
                 {
-                    Name = "free tier",
+                    Name = "Free Tier",
                 };
             }
 
+            // 6. Otherwise, retrieve the corresponding Product for the chosen subscription
             var subscriptionItem = subscription.Items.Data.FirstOrDefault();
             if (subscriptionItem != null)
             {
                 var product = await productService.GetAsync(subscriptionItem.Price.ProductId);
+
+                // Add extra metadata showing if this subscription is set to cancel
+                product.Metadata["CancelAtPeriodEnd"] = subscription.CancelAtPeriodEnd.ToString();
+
                 return product;
             }
 
+            // 7. Fallback: If we cannot find the product, default back to Free Tier
             return new Product
             {
                 Name = "Free Tier",
@@ -145,6 +210,50 @@ namespace ContentMagican.Services
 
             return session.Url;
         }
+
+
+        public async Task<string> CancelSubscriptionAtPeriodEnd(HttpContext ctx)
+        {
+            // 1. Get the user
+            var user = await _userService.RetrieveUserInformation(ctx);
+            if (string.IsNullOrEmpty(user.CustomerId))
+            {
+                return "No Stripe customer found for this user.";
+            }
+
+            // 2. Retrieve the user's active subscription
+            var subscriptionService = new SubscriptionService();
+            var activeSubscriptions = await subscriptionService.ListAsync(new SubscriptionListOptions
+            {
+                Customer = user.CustomerId,
+                Status = "active",
+                Limit = 1
+            });
+
+            var subscription = activeSubscriptions.FirstOrDefault();
+            if (subscription == null)
+            {
+                return "No active subscription found to cancel.";
+            }
+
+            // 3. Schedule the subscription to cancel at the end of the current billing period
+            var updateOptions = new SubscriptionUpdateOptions
+            {
+                CancelAtPeriodEnd = true
+            };
+
+            var updatedSubscription = await subscriptionService.UpdateAsync(subscription.Id, updateOptions);
+
+            // 4. Verify the subscription is set to cancel at period end
+            if (updatedSubscription.CancelAtPeriodEnd == true)
+            {
+                return $"Subscription {subscription.Id} is scheduled to cancel at the end of the current billing period.";
+            }
+
+            return "Unable to schedule cancellation. Please try again or contact support.";
+        }
+
+
 
     }
 }

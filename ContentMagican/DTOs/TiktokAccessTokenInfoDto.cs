@@ -27,6 +27,7 @@ namespace ContentMagican.DTOs
                 UserName = tikTokUser.DisplayName,
                 TiktokUserId = tikTokUser.TiktokUserId,
                 AvatarUrl = tikTokUser.AvatarUrl,
+                status = 0
             };
         }
     }

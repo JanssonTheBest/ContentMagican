@@ -114,11 +114,13 @@ namespace ContentMagican.Controllers
                 {
                     if (activeSubscription.Id != subscriptionId)
                     {
-                        await subscriptionService.CancelAsync(activeSubscription.Id, new SubscriptionCancelOptions
+
+                        var updateOptions = new SubscriptionUpdateOptions
                         {
-                            InvoiceNow = true, // Finalize any outstanding invoices
-                            Prorate = true     // Prorate the cancellation if applicable
-                        });
+                            CancelAtPeriodEnd = true
+                        };
+
+                        var updatedSubscription = await subscriptionService.UpdateAsync(activeSubscription.Id, updateOptions);
                     }
                 }
 

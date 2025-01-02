@@ -24,10 +24,21 @@ namespace ContentMagican.Repositories
 
         public async Task<List<Product>> GetAllProducts()
         {
-            ProductService productService = new ProductService();
-            var list = productService.List().ToList();
-            return list;
+            var productService = new ProductService();
+
+            var options = new ProductListOptions
+            {
+                // If you want to see more data about the default price:
+                Expand = new List<string> { "data.default_price" }
+            };
+
+            var products = await productService.ListAsync(options);
+
+            // Now each Product’s DefaultPrice should be populated if the product
+            // has its default_price set on Stripe
+            return products.ToList();
         }
+
 
         public async Task<Customer> GetCustomer(string id)
         {

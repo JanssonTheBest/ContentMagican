@@ -169,7 +169,7 @@
                 </div>
 
                 <!-- Subscription Badge -->
-                <span class="badge bg-primary me-3">@((await stripeService.GetRelevantProductFromUser(user.Id, Context)).Name)</span>
+                <span class="badge bg-primary me-3">@((await stripeService.GetRelevantProductFromUser(Context)).Name)</span>
 
                 <!-- Profile Dropdown -->
                 <div class="dropdown">

@@ -1,43 +1,29 @@
 ﻿@using ContentMagican.Services
 
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
 @{
+    // Any necessary Razor code here
 }
-
-
-
 
 <div class="container mt-4">
     <h1 class="text-center mb-4">Choose a task type</h1>
 
     <div class="row">
-        <form action="@Url.Action("ChoseTaskType","Tasks")" method="post" style="min-height:30vh">
-
+        <form action="@Url.Action("ChoseTaskType", "Tasks")" method="post" style="min-height:30vh">
             <div class="overflow-scroll">
-
-
                 @for (int i = 0; i < Enum.GetNames(typeof(TaskService.TaskTypes)).Length; i++)
                 {
-                    <!-- First Box -->
                     <div class="card" style="align-items:center; padding:10px; margin:3px;">
-                        <div class="col-12 col-sm-6 col-md-4 mb-0" style="display:flex; flex-direction:row; width:100%; margin: 0 auto">
-
-                            <!-- Updated to include unique id and class -->
+                        <div class="col-12 col-sm-6 col-md-4 mb-0 d-flex flex-row justify-content-center">
                             <input type="radio" class="radioButton" id="q@i" name="r" value="@i" style="width:10%">
-                            <!-- Associated label for better accessibility -->
-                            <label for="q@i" style="width:90%; margin:0 auto">
+                            <label for="q@i" style="width:90%; margin:0 auto; cursor:pointer;">
                                 @Enum.GetNames(typeof(TaskService.TaskTypes))[i].Replace('_', ' ')
                             </label>
                         </div>
                     </div>
                 }
-
             </div>
 
-            <!-- Changed to a button with disabled attribute -->
-            <div class="d-flex justify-content-end mb-3" style="display:flex; justify-content:right;">
+            <div class="d-flex justify-content-end mb-3">
                 <button type="submit" class="btn btn-primary" id="nextButton" disabled style="margin:5px; height:40px">
                     Next
                 </button>
@@ -59,6 +45,7 @@
                     checked = true;
                 }
             });
+            console.log('Radio checked:', checked);
             nextButton.disabled = !checked;
         }
 
@@ -68,6 +55,7 @@
         // Add event listeners to all radio buttons
         radioButtons.forEach(function (radio) {
             radio.addEventListener('change', checkRadioButtons);
+            console.log('Event listener added to:', radio.id);
         });
     });
 </script>
