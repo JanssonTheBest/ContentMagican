@@ -27,6 +27,7 @@ builder.Services.AddSingleton<FFmpegService>();
 builder.Services.AddScoped<StripeRepository>();
 builder.Services.AddScoped<StripeService>();
 builder.Services.AddScoped<TiktokService>();
+builder.Services.AddScoped<EmailService>();
 
 
 // Add services to the container.

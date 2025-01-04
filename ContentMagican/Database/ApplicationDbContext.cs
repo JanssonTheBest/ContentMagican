@@ -18,6 +18,7 @@ namespace ContentMagican.Database
         public DbSet<VideoAutomation> VideoAutomation { get; set; }
         public DbSet<OrderLog> Orders { get; set; }
         public DbSet<SocialMediaAccessSession> SocialMediaAccessSessions { get; set; }
+        public DbSet<RegisterAtempt> RegisterAtempt { get; set; }
     }
 
 }

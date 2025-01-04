@@ -69,6 +69,7 @@ namespace ContentMagican.MiddleWare
                             else
                             {
                                 await _next(context);
+                                return;
                             }
                         }
                         catch (Exception e)

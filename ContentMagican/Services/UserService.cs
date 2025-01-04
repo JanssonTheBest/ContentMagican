@@ -1,4 +1,5 @@
-﻿using ContentMagican.Database;
+﻿using BCrypt.Net;
+using ContentMagican.Database;
 using ContentMagican.DTOs;
 using ContentMagican.Models;
 using Microsoft.Extensions.Configuration;
@@ -6,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Web;
 
@@ -16,54 +18,98 @@ namespace ContentMagican.Services
         private readonly IConfiguration _configuration;
         ApplicationDbContext _applicationDbContext;
         private readonly TokenValidationParameters _tokenValidationParameters;
+        private readonly EmailService _emailService;
+        public string emailConfirmationCryptKey;
 
-
-        public UserService(ApplicationDbContext applicationDbContext, IConfiguration configuration, TokenValidationParameters tokenValidationParameters)
+        public UserService(ApplicationDbContext applicationDbContext, IConfiguration configuration, TokenValidationParameters tokenValidationParameters, EmailService emailService)
         {
             _applicationDbContext = applicationDbContext;
             _configuration = configuration;
             _tokenValidationParameters = tokenValidationParameters;
+            _emailService = emailService;
+            emailConfirmationCryptKey = _configuration.GetSection("Cryption")["EmailConfirmationKey"];
         }
         public enum RegisterCodes
         {
             Ok,
-            An_User_With_That_Email_Already_Exist,
             Email_Is_Not_Valid,
-            Passwords_Does_Not_Match,
+            An_User_With_That_Email_Already_Exist,
+            Passwords_Do_Not_Match,
+            Password_Length_Too_Short,
+            Password_Missing_Uppercase,
+            Password_Missing_Lowercase,
+            Password_Missing_Digit,
+            Password_Missing_SpecialCharacter,
+            An_Confirmation_Email_Has_Been_Sent_Confirm_Your_Email_To_Continue
         }
 
-        public async Task<RegisterCodes> RegisterAccount(RegisterViewModel registerModel)
+
+        public async Task<RegisterCodes> RegisterAccount(RegisterViewModel registerModel, string confirmationUri)
         {
+            // Email validation pattern
             string emailPattern = @"^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$";
 
-
+            // Validate Email Presence
             if (string.IsNullOrEmpty(registerModel.Email))
             {
                 return RegisterCodes.Email_Is_Not_Valid;
             }
 
+            // Validate Email Format
             if (!Regex.IsMatch(registerModel.Email, emailPattern))
             {
                 return RegisterCodes.Email_Is_Not_Valid;
             }
 
-            if (_applicationDbContext.Users.Select(a => a.Email.Equals(registerModel.Email)).FirstOrDefault() != default)
+            // Check if Email Already Exists (Case-Insensitive)
+            // Revised line: Removed StringComparison.OrdinalIgnoreCase
+            if (_applicationDbContext.Users.Any(a => a.Email == registerModel.Email))
             {
                 return RegisterCodes.An_User_With_That_Email_Already_Exist;
             }
 
+            // Check if Passwords Match
             if (!registerModel.Password.Equals(registerModel.ConfirmPassword))
             {
-                return RegisterCodes.Passwords_Does_Not_Match;
+                return RegisterCodes.Passwords_Do_Not_Match;
             }
 
-            await _applicationDbContext.Users.AddAsync(new User
+            // Password Validation
+
+            // 1. Minimum Length Check
+            if (registerModel.Password.Length < 8)
             {
-                Email = registerModel.Email,
-                Username = registerModel.Username,
-                Password = registerModel.Password,
+                return RegisterCodes.Password_Length_Too_Short;
+            }
+
+            if (!Regex.IsMatch(registerModel.Password, @"\d"))
+            {
+                return RegisterCodes.Password_Missing_Digit;
+            }
+
+      
+            string attemptId = Guid.NewGuid().ToString().Replace('-', ' ');
+
+            string encryptedId = CryptService.Encrypt(
+                $"{registerModel.Email},{registerModel.Username},{BCrypt.Net.BCrypt.HashPassword(registerModel.Password)}",
+                emailConfirmationCryptKey
+            );
+
+            string confirmationLink = $"{confirmationUri}?attemptId={HttpUtility.UrlEncode(attemptId)}&encryptedAttemptId={HttpUtility.UrlEncode(encryptedId)}";
+            _emailService.SendEmail(
+                registerModel.Email,
+                "Confirm your email address",
+                $"Click on the link below to confirm your email address: {confirmationLink}"
+            );
+
+            // Save Registration Attempt to Database
+            _applicationDbContext.RegisterAtempt.Add(new RegisterAtempt
+            {
+                EncryptedIdentifier = encryptedId,
+                AttemptId = attemptId
             });
 
+            // Save Changes Asynchronously
             await _applicationDbContext.SaveChangesAsync();
 
             return RegisterCodes.Ok;
@@ -76,6 +122,7 @@ namespace ContentMagican.Services
             Ok,
             An_User_With_That_Email_Does_Not_Exist,
             Wrong_Passwords,
+            Your_Email_Has_Been_Confirmed_Please_Login,
         }
         public async Task<LoginCodes> LoginAccount(LoginViewModel loginModel)
         {
@@ -85,13 +132,10 @@ namespace ContentMagican.Services
                 return LoginCodes.An_User_With_That_Email_Does_Not_Exist;
             }
 
-            if (user.Password != loginModel.Password)
+            if (!BCrypt.Net.BCrypt.Verify(loginModel.Password, user.Password))
             {
                 return LoginCodes.Wrong_Passwords;
             }
-
-
-
             return LoginCodes.Ok;
         }
 
