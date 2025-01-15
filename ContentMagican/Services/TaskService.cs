@@ -76,7 +76,8 @@ namespace ContentMagican.Services
                 Subtype = (int)TaskSubTypes.Reddit_Stories,
                 UserId = user.Id,
                 AdditionalInfo = "",
-                SocialMediaAccessSessionsId = socialMediaAccessSessionId
+                SocialMediaAccessSessionsId = socialMediaAccessSessionId,
+                LastAssessed = DateTime.MinValue,
             };
 
 

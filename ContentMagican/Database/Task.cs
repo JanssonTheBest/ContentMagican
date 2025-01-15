@@ -11,6 +11,7 @@
         public DateTime Created { get; set; }
         public string AdditionalInfo { get; set; }
         public int SocialMediaAccessSessionsId { get; set; }
+        public DateTime LastAssessed { get; set; }
 
     }
 }

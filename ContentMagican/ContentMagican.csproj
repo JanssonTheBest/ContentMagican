@@ -17,7 +17,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.0" />
   </ItemGroup>
 
-	<!--<ItemGroup>
+	<!-- <ItemGroup>
     <Folder Include="temp\temp\" />
   </ItemGroup>
 
@@ -37,7 +37,7 @@
 
 	<ItemGroup>
 		<Content Include="MediaResources\**\*.*" />
-	</ItemGroup>-->
+	</ItemGroup> -->
 
 
 

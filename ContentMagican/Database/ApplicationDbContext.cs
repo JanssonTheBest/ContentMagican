@@ -19,6 +19,7 @@ namespace ContentMagican.Database
         public DbSet<OrderLog> Orders { get; set; }
         public DbSet<SocialMediaAccessSession> SocialMediaAccessSessions { get; set; }
         public DbSet<RegisterAtempt> RegisterAtempt { get; set; }
+        public DbSet<ResetPasswordAttempt> ResetPasswordAttempt { get; set; }
     }
 
 }
